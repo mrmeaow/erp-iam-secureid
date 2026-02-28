@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "private": true,
+  "type": "module",
   "scripts": {
+    "meaow": "tsx --tsconfig tsconfig.json meaow.ts",
     "api": "pnpm --filter api",
     "web": "pnpm --filter webapp",
     "dev": "pnpm --parallel --filter './apps/*' dev",
@@ -21,5 +23,9 @@
   ],
   "author": "mrmeaow",
   "license": "MIT",
-  "packageManager": "pnpm@10.15.0"
+  "packageManager": "pnpm@10.15.0",
+  "devDependencies": {
+    "@types/node": "^22.19.11",
+    "tsx": "^4.21.0"
+  }
 }

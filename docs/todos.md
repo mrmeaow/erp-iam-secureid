@@ -7,7 +7,7 @@
 ### Sprint February (23 -> 27+)
 
 - [x] Init the repository and pre-planning.
-- [ ] Setup foundations in `nest.js` api-codebase.
+- [x] Setup foundations in `nest.js` api-codebase.
 - [ ] Write & wire all misc. for authentication APIs, must use JWT with `jti` (redis session).
 - [ ] Scaffold `angular` web-app foundation with authentication.
 - [ ] Authorization and Tenant APIs + web-app wiring.
