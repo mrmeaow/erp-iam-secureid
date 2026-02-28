@@ -2,5 +2,9 @@
 **/dist/
 **/build/
 
+keys/
+infra/data/
+data/
+
 *.log
 

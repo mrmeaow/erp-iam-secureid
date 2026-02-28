@@ -1,0 +1,112 @@
+services:
+  # --- PostgreSQL 16 ---
+  postgres:
+    image: postgres:16-alpine
+    container_name: erpiam-postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-admin}
+      POSTGRES_PASSWORD: ${DB_PASS:-secret}
+      POSTGRES_DB: ${DB_NAME:-erpiam_dev}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data:Z
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-admin} -d ${DB_NAME:-erpiam_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # --- Redis 7 ---
+  redis:
+    image: redis:7-alpine
+    container_name: erpiam-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - ./data/redis:/data:Z
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # --- MongoDB 7 (Replica Set) ---
+  mongo:
+    image: mongo:7
+    container_name: erpiam-mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS:-secret}
+    volumes:
+      - ./data/mongo:/data/db:Z
+    command: >
+      bash -c "
+      if [ ! -f /data/db/keyfile ]; then
+        head -c 756 /dev/urandom | base64 > /data/db/keyfile;
+        chmod 400 /data/db/keyfile;
+        chown 999:999 /data/db/keyfile;
+      fi;
+      exec docker-entrypoint.sh mongod --replSet rs0 --bind_ip_all --auth --keyFile /data/db/keyfile
+      "
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: echo 'rs.status().ok' | mongosh --port 27017 -u ${MONGO_USER:-admin} -p ${MONGO_PASS:-secret} --authenticationDatabase admin --quiet | grep -q "1"
+      interval: 10s
+      start_period: 30s
+    restart: unless-stopped
+
+  # ---------------- OpenObserve ----------------
+  openobserve:
+    image: public.ecr.aws/zinclabs/openobserve:v0.60.2
+    container_name: erpiam-openobserve
+    environment:
+      - ZO_DATA_DIR=/data
+      - ZO_ROOT_USER_EMAIL=root@example.com
+      - ZO_ROOT_USER_PASSWORD=StrongPasswordHere
+    volumes:
+      - ./data/openobserve:/data:Z
+    ports:
+      - "5080:5080"
+    restart: unless-stopped
+
+  # ---------------- OTEL Collector ----------------
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: erpiam-otel
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml:Z
+    ports:
+      - "4318:4318"
+      - "4317:4317"
+    restart: unless-stopped
+    depends_on:
+      - openobserve
+
+
+  # --- Mailpit (Modern Mailhog replacement) ---
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: erpiam-mailpit
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+    restart: unless-stopped
+
+  # --- DevSMS ---
+  devsms:
+    image: ghcr.io/mrmeaow/devsms:latest
+    container_name: erpiam-devsms
+    ports:
+      - "3030:3030"
+    restart: unless-stopped
+
+networks:
+  default:
+    name: erpiam-network
+
