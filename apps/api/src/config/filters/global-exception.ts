@@ -1,14 +1,14 @@
 import { buildError } from '#config/api.response';
 import {
-    ArgumentsHost,
-    Catch,
-    ExceptionFilter,
-    HttpException,
-    HttpStatus,
-    Injectable,
-    Logger
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { HttpAdapterHost } from '@nestjs/core';
 
 interface NestValidationError {
   message?: string | string[];
@@ -19,13 +19,15 @@ interface NestValidationError {
 @Injectable()
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
-
   private readonly logger = new Logger(GlobalExceptionFilter.name);
 
+  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
+
   catch(exception: unknown, host: ArgumentsHost) {
+    const { httpAdapter } = this.httpAdapterHost;
     const ctx = host.switchToHttp();
-    const request = ctx.getRequest<Request>();
-    const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest<any>();
+    const response = ctx.getResponse<any>();
 
     let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal server error';
@@ -43,7 +45,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           ? raw.message.join('; ')
           : (raw.message ?? exception.message);
 
-        if (statusCode === HttpStatus.UNPROCESSABLE_ENTITY || statusCode === HttpStatus.BAD_REQUEST) {
+        if (
+          statusCode === HttpStatus.UNPROCESSABLE_ENTITY ||
+          statusCode === HttpStatus.BAD_REQUEST
+        ) {
           details = raw;
         }
       }
@@ -64,12 +69,14 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     };
 
     const result = buildError(message, statusCode, code, details, meta);
-    
-    // Store for pino-http logging
-    (response as any).locals = (response as any).locals || {};
-    (response as any).locals.body = result;
 
-    response.status(statusCode).json(result);
+    // Store for pino-http logging (shared with interceptors/loggers)
+    if (response && typeof response === 'object') {
+      (response as any).locals = (response as any).locals || {};
+      (response as any).locals.body = result;
+    }
+
+    httpAdapter.reply(response, result, statusCode);
   }
 
   private statusToCode(status: number): string {

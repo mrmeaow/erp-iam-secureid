@@ -2,18 +2,27 @@ import { AuthModule, UserModule } from '#app';
 import { censorObject } from '#config/censor.config';
 import { GlobalExceptionFilter } from '#config/filters/global-exception';
 import { ResponseInterceptor } from '#config/interceptors/response';
+import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggerModule } from 'nestjs-pino';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuditLogModule } from './app/audit-log/audit-log.module';
+import { RoleModule } from './app/role/role.module';
+import { TenantModule } from './app/tenant/tenant.module';
 import { AppConfigModule } from './shared/modules/app-config/app-config.module';
 import { AppConfigService } from './shared/modules/app-config/app-config.service';
+import { DatabaseModule } from './shared/modules/database/database.module';
+import { MailModule } from './shared/modules/mail/mail.module';
+import { RedisModule } from './shared/modules/redis/redis.module';
 
 @Module({
   imports: [
     AppConfigModule,
-    
+    DatabaseModule,
+    RedisModule,
+
     LoggerModule.forRootAsync({
       inject: [AppConfigService],
       useFactory: (cfg: AppConfigService) => ({
@@ -40,15 +49,20 @@ import { AppConfigService } from './shared/modules/app-config/app-config.service
             req(req) {
               if (req.raw?.body) {
                 req.body = censorObject(req.raw.body);
-              } else if ((req as any).body) {
-                req.body = censorObject((req as any).body);
+              } else if (req.body) {
+                req.body = censorObject(req.body);
               }
               return req;
             },
           },
           customProps: (req: any, res: any) => ({
-            body: req.body || req.raw?.body ? censorObject(req.body || req.raw.body) : undefined,
-            responseData: res.locals?.body ? censorObject(res.locals.body) : undefined,
+            body:
+              req.body || req.raw?.body
+                ? censorObject(req.body || req.raw.body)
+                : undefined,
+            responseData: res.locals?.body
+              ? censorObject(res.locals.body)
+              : undefined,
           }),
           transport: {
             target: '@openobserve/pino-openobserve',
@@ -67,8 +81,25 @@ import { AppConfigService } from './shared/modules/app-config/app-config.service
       }),
     }),
 
+    AuditLogModule,
     UserModule,
     AuthModule,
+    TenantModule,
+    RoleModule,
+
+    BullModule.forRootAsync({
+      imports: [AppConfigModule],
+      inject: [AppConfigService],
+      useFactory: (config: AppConfigService) => ({
+        connection: {
+          host: config.redis.host,
+          port: config.redis.port,
+          password: config.redis.password,
+          db: config.redis.db,
+        },
+      }),
+    }),
+    MailModule,
   ],
   controllers: [AppController],
   providers: [

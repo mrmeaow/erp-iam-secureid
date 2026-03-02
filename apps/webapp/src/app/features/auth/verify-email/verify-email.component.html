@@ -1,0 +1,65 @@
+<div class="space-y-6 text-center">
+  <div>
+    <h2 class="text-2xl font-bold text-slate-100">Identity Verification</h2>
+    <p class="mt-2 text-sm text-slate-400">
+      Finalizing your access to the secure enterprise network.
+    </p>
+  </div>
+
+  <div class="flex justify-center py-8">
+    @if (status() === 'verifying') {
+      <div class="flex flex-col items-center space-y-4">
+        <div
+          class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"
+        ></div>
+        <p class="text-slate-300 font-medium">Validating security token...</p>
+      </div>
+    } @else if (status() === 'success') {
+      <div class="flex flex-col items-center space-y-4">
+        <div
+          class="w-16 h-16 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center"
+        >
+          <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        </div>
+        <p class="text-green-400 font-bold text-lg">Identity Confirmed</p>
+        <p class="text-slate-400">Your email has been verified. Protocol complete.</p>
+        <button
+          routerLink="/auth/login"
+          class="mt-4 px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all"
+        >
+          Proceed to Login
+        </button>
+      </div>
+    } @else {
+      <div class="flex flex-col items-center space-y-4">
+        <div
+          class="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center"
+        >
+          <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </div>
+        <p class="text-red-400 font-bold text-lg">Verification Failed</p>
+        <p class="text-slate-400">Security token invalid or expired.</p>
+        <button
+          routerLink="/auth/login"
+          class="mt-4 px-6 py-2 border border-slate-700 hover:bg-slate-800 text-slate-300 rounded-lg transition-all"
+        >
+          Return to Login
+        </button>
+      </div>
+    }
+  </div>
+</div>

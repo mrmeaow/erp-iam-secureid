@@ -12,7 +12,11 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-admin} -d ${DB_NAME:-erpiam_dev}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USER:-admin} -d ${DB_NAME:-erpiam_dev}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -32,32 +36,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
-
-  # --- MongoDB 7 (Replica Set) ---
-  mongo:
-    image: mongo:7
-    container_name: erpiam-mongo
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-admin}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS:-secret}
-    volumes:
-      - ./data/mongo:/data/db:Z
-    command: >
-      bash -c "
-      if [ ! -f /data/db/keyfile ]; then
-        head -c 756 /dev/urandom | base64 > /data/db/keyfile;
-        chmod 400 /data/db/keyfile;
-        chown 999:999 /data/db/keyfile;
-      fi;
-      exec docker-entrypoint.sh mongod --replSet rs0 --bind_ip_all --auth --keyFile /data/db/keyfile
-      "
-    ports:
-      - "27017:27017"
-    healthcheck:
-      test: echo 'rs.status().ok' | mongosh --port 27017 -u ${MONGO_USER:-admin} -p ${MONGO_PASS:-secret} --authenticationDatabase admin --quiet | grep -q "1"
-      interval: 10s
-      start_period: 30s
     restart: unless-stopped
 
   # ---------------- OpenObserve ----------------
@@ -88,7 +66,6 @@ services:
     depends_on:
       - openobserve
 
-
   # --- Mailpit (Modern Mailhog replacement) ---
   mailpit:
     image: axllent/mailpit:latest
@@ -109,4 +86,3 @@ services:
 networks:
   default:
     name: erpiam-network
-

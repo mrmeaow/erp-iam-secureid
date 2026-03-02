@@ -18,8 +18,8 @@ export interface ApiResponse<T = unknown> {
 }
 
 export interface ApiErrorPayload {
-  code: string;       // Machine-readable error code, e.g. "VALIDATION_ERROR"
-  details?: unknown;  // Additional context (validation errors, etc.)
+  code: string; // Machine-readable error code, e.g. "VALIDATION_ERROR"
+  details?: unknown; // Additional context (validation errors, etc.)
 }
 
 // ── Builder helpers ────────────────────────────────────────────────────────

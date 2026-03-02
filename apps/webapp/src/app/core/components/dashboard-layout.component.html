@@ -1,0 +1,142 @@
+<div
+  class="min-h-screen bg-[#0d1117] text-[#f0f6fc] flex flex-col md:flex-row font-sans selection:bg-blue-500/30"
+>
+  <!-- Sidebar -->
+  <aside
+    class="w-full md:w-64 bg-[#161b22] border-r border-[#30363d] flex flex-col transition-all duration-300 z-50 shrink-0"
+    [class.md:w-20]="isSidebarCollapsed()"
+  >
+    <div
+      class="h-16 flex items-center px-6 border-b border-[#30363d] backdrop-blur transition-all duration-300"
+    >
+      <span
+        class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent truncate"
+      >
+        {{ isSidebarCollapsed() ? 'S.' : 'SECURE.ID' }}
+      </span>
+    </div>
+
+    <nav class="flex-grow p-4 space-y-2 overflow-y-auto">
+      @for (item of menuItems(); track item.label) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="bg-blue-500/10 text-blue-400 border-blue-500/50"
+          class="flex items-center px-3 py-2.5 rounded-xl border border-transparent transition-all hover:bg-white/5 group relative"
+          [title]="item.label"
+        >
+          <div class="flex items-center gap-3">
+            <i class="opacity-70 group-hover:scale-110 transition-transform">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" [innerHTML]="item.icon"></svg>
+            </i>
+            <span
+              class="text-sm font-medium transition-all duration-300"
+              [class.opacity-0]="isSidebarCollapsed()"
+              [class.hidden]="isSidebarCollapsed()"
+            >
+              {{ item.label }}
+            </span>
+          </div>
+          @if (isSidebarCollapsed()) {
+            <div
+              class="absolute left-full ml-4 px-2 py-1 bg-[#161b22] border border-[#30363d] rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity z-[100] whitespace-nowrap shadow-2xl"
+            >
+              {{ item.label }}
+            </div>
+          }
+        </a>
+      }
+    </nav>
+
+    <div class="p-4 border-t border-[#30363d]">
+      <button
+        (click)="toggleSidebar()"
+        class="w-full flex items-center justify-center p-2 rounded-lg hover:bg-white/5 transition-colors"
+      >
+        <svg
+          class="w-5 h-5 transition-transform duration-300"
+          [class.rotate-180]="isSidebarCollapsed()"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
+          ></path>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Container -->
+  <div class="flex-grow flex flex-col min-w-0 bg-gradient-to-br from-[#0d1117] to-[#161b22]">
+    <!-- Top Nav -->
+    <header
+      class="h-16 flex items-center justify-between px-6 border-b border-[#30363d] bg-[#161b22]/50 backdrop-blur-md sticky top-0 z-40 shrink-0"
+    >
+      <div class="flex items-center">
+        <h2 class="text-sm font-medium text-[#c9d1d9] hidden md:block">Dashboard / Overview</h2>
+      </div>
+
+      <div class="flex items-center gap-4" *ngIf="user() as profile">
+        <div class="flex flex-col text-right pr-4 border-r border-[#30363d] hidden sm:flex">
+          <span class="text-sm font-semibold text-[#f0f6fc] truncate max-w-[150px]">{{
+            profile.email
+          }}</span>
+          <span class="text-[10px] text-[#8b949e] uppercase tracking-widest font-bold"
+            >Tenant: {{ profile.tenantId.substring(0, 8) }}...</span
+          >
+        </div>
+
+        <div class="relative group">
+          <button
+            class="w-10 h-10 rounded-full border-2 border-blue-500/30 p-0.5 hover:border-blue-500 transition-all active:scale-95 shadow-lg shadow-blue-500/10"
+          >
+            <div
+              class="w-full h-full rounded-full bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center text-blue-400 font-bold"
+            >
+              {{ profile.email.charAt(0).toUpperCase() }}
+            </div>
+          </button>
+
+          <div
+            class="absolute right-0 mt-3 w-56 p-2 bg-[#161b22] border border-[#30363d] rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] translate-y-2 group-hover:translate-y-0"
+          >
+            <div class="px-4 py-3 border-b border-[#30363d] mb-1">
+              <p class="text-xs text-[#8b949e] font-bold uppercase tracking-wider mb-1">
+                Signed in as
+              </p>
+              <p class="text-sm font-semibold text-[#f0f6fc] truncate">{{ profile.email }}</p>
+            </div>
+            <button
+              (click)="logout()"
+              class="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-xl transition-colors group/logout"
+            >
+              <svg
+                class="w-4 h-4 group-hover/logout:rotate-12 transition-transform"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24 font-bold border-2 p-1 rounded"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                ></path>
+              </svg>
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Dynamic Content -->
+    <main class="flex-grow p-4 md:p-8 overflow-auto scrollbar-hide">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
