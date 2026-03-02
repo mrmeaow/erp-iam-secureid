@@ -12,16 +12,32 @@ import { map } from 'rxjs/operators';
 
 @Injectable()
 export class ResponseInterceptor<T> implements NestInterceptor<T> {
-  private readonly excludedPaths = ['/health', '/metrics', '/docs', '/openapi.json', '/openapi.yaml', '/v1/health', '/v1/metrics', '/v1/docs'];
+  private readonly excludedPaths = [
+    '/health',
+    '/metrics',
+    '/docs',
+    '/openapi.json',
+    '/openapi.yaml',
+    '/v1/health',
+    '/v1/metrics',
+    '/v1/docs',
+  ];
 
-  intercept(context: ExecutionContext, next: CallHandler<T>): Observable<unknown> {
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler<T>,
+  ): Observable<unknown> {
     const req = context.switchToHttp().getRequest<Request>();
-    
+
     // Check if the current path is in the exclusion list
-    if (this.excludedPaths.some(path => req.url === path || req.url.startsWith(path + '?'))) {
+    if (
+      this.excludedPaths.some(
+        (path) => req.url === path || req.url.startsWith(path + '?'),
+      )
+    ) {
       return next.handle();
     }
-    
+
     const res = context.switchToHttp().getResponse<{ statusCode: number }>();
 
     return next.handle().pipe(
@@ -36,19 +52,19 @@ export class ResponseInterceptor<T> implements NestInterceptor<T> {
 
         const statusCode = res.statusCode ?? 200;
 
-        const censored =
-          data !== null && data !== undefined && typeof data === 'object'
-            ? censorObject(data as Record<string, unknown>)
-            : data;
-
-        const result = buildSuccess(censored, 'OK', statusCode, {
+        const result = buildSuccess(data, 'OK', statusCode, {
           path: req.url,
           requestId: req.headers['x-request-id'] as string | undefined,
         });
 
-        // Store for pino-http logging
+        // Store censored version for pino-http logging
+        const censored =
+          result !== null && typeof result === 'object'
+            ? censorObject(result as any)
+            : result;
+
         (res as any).locals = (res as any).locals || {};
-        (res as any).locals.body = result;
+        (res as any).locals.body = censored;
 
         return result;
       }),

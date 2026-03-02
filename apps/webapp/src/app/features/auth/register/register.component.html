@@ -1,0 +1,135 @@
+<div
+  class="w-full bg-[#161b22]/70 border border-[#30363d] rounded-[32px] p-10 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all hover:border-emerald-500/30 animate-in fade-in zoom-in duration-500"
+>
+  <div class="text-center mb-10 group">
+    <div
+      class="inline-block p-4 rounded-2xl bg-emerald-500/10 mb-4 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all duration-500"
+    >
+      <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+        ></path>
+      </svg>
+    </div>
+    <h1
+      class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-500 bg-[length:200%_auto] animate-gradient bg-clip-text text-transparent"
+    >
+      SECURE.ID
+    </h1>
+    <p class="text-[#8b949e] mt-3 font-medium">Onboard your organization securely</p>
+  </div>
+
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-5">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-semibold text-[#c9d1d9] mb-2" for="name">Full Name</label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          class="w-full bg-[#0d1117]/80 border border-[#30363d] rounded-2xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all text-[#f0f6fc] placeholder:text-[#484f58]"
+          [class.border-red-500]="isFieldInvalid('name')"
+          placeholder="John Doe"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-[#c9d1d9] mb-2" for="companyName"
+          >Company</label
+        >
+        <input
+          id="companyName"
+          type="text"
+          formControlName="companyName"
+          class="w-full bg-[#0d1117]/80 border border-[#30363d] rounded-2xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all text-[#f0f6fc] placeholder:text-[#484f58]"
+          [class.border-red-500]="isFieldInvalid('companyName')"
+          placeholder="Acme Inc"
+        />
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-semibold text-[#c9d1d9] mb-2" for="email">Work Email</label>
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+        class="w-full bg-[#0d1117]/80 border border-[#30363d] rounded-2xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all text-[#f0f6fc] placeholder:text-[#484f58]"
+        [class.border-red-500]="isFieldInvalid('email')"
+        placeholder="name@company.com"
+      />
+      <div *ngIf="isFieldInvalid('email')" class="mt-2 text-xs text-red-400 font-medium">
+        Please enter a valid work email.
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-semibold text-[#c9d1d9] mb-2" for="password"
+        >Security Key (Password)</label
+      >
+      <input
+        id="password"
+        type="password"
+        formControlName="password"
+        class="w-full bg-[#0d1117]/80 border border-[#30363d] rounded-2xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all text-[#f0f6fc] placeholder:text-[#484f58]"
+        [class.border-red-500]="isFieldInvalid('password')"
+        placeholder="••••••••"
+      />
+      <div *ngIf="isFieldInvalid('password')" class="mt-2 text-xs text-red-400 font-medium">
+        Minimum 6 characters required.
+      </div>
+    </div>
+
+    <div
+      class="flex items-start mt-4 bg-white/5 p-4 rounded-xl border border-white/5 transition-all hover:bg-white/10"
+    >
+      <div class="flex items-center h-5">
+        <input
+          id="terms"
+          type="checkbox"
+          required
+          class="w-5 h-5 bg-[#0d1117] border-[#30363d] rounded-lg text-emerald-500 focus:ring-emerald-500/40 transition-all cursor-pointer"
+        />
+      </div>
+      <label for="terms" class="ml-3 text-xs text-[#8b949e] leading-relaxed">
+        I certify that I am authorized to register this organization and agree to the
+        <a href="#" class="text-emerald-400 font-bold hover:underline">Terms of Authority</a>
+        and <a href="#" class="text-emerald-400 font-bold hover:underline">Privacy Charter</a>.
+      </label>
+    </div>
+
+    <button
+      type="submit"
+      [disabled]="registerForm.invalid"
+      class="w-full group/btn relative bg-gradient-to-br from-emerald-600 to-cyan-700 hover:from-emerald-500 hover:to-cyan-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl transition-all shadow-[0_10px_30px_-5px_rgba(16,185,129,0.3)] active:scale-95 flex items-center justify-center gap-2"
+    >
+      <span>Initialize Identity</span>
+      <svg
+        class="w-5 h-5 group-hover/btn:translate-x-1 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+        ></path>
+      </svg>
+    </button>
+  </form>
+
+  <div class="mt-10 pt-8 border-t border-[#30363d] text-center">
+    <p class="text-sm text-[#8b949e] font-medium">
+      Already have an account?
+      <a
+        routerLink="/auth/login"
+        class="text-emerald-400 font-bold hover:text-emerald-300 transition-colors ml-1 underline decoration-2 underline-offset-4"
+        >Sign In</a
+      >
+    </p>
+  </div>
+</div>

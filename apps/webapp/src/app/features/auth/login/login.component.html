@@ -1,0 +1,107 @@
+<div
+  class="w-full bg-[#161b22]/70 border border-[#30363d] rounded-[32px] p-10 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all hover:border-blue-500/30 animate-in fade-in zoom-in duration-500"
+>
+  <div class="text-center mb-10 group">
+    <div
+      class="inline-block p-4 rounded-2xl bg-blue-500/10 mb-4 group-hover:scale-110 group-hover:bg-blue-500/20 transition-all duration-500"
+    >
+      <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A10.003 10.003 0 0012 20a10.003 10.003 0 006.203-2.138l.054.09l-.11.2a10.114 10.114 0 01-2.903 3.448M5.877 18.917A10.003 10.003 0 0112 18a10.003 10.003 0 016.123.917m-12.246 0L5 19.5m14-0.583l.877.583M12 7a4 4 0 100 8 4 4 0 000-8z"
+        ></path>
+      </svg>
+    </div>
+    <h1
+      class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 via-indigo-400 to-blue-500 bg-[length:200%_auto] animate-gradient bg-clip-text text-transparent"
+    >
+      SECURE.ID
+    </h1>
+    <p class="text-[#8b949e] mt-3 font-medium">Welcome back! Sign in to continue</p>
+  </div>
+
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+    <div>
+      <label class="block text-sm font-semibold text-[#c9d1d9] mb-2" for="email"
+        >Email Address</label
+      >
+      <div class="relative group/field">
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="w-full bg-[#0d1117]/80 border border-[#30363d] rounded-2xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all text-[#f0f6fc] placeholder:text-[#484f58]"
+          [class.border-red-500]="isFieldInvalid('email')"
+          placeholder="name@company.com"
+        />
+        <div
+          *ngIf="isFieldInvalid('email')"
+          class="mt-2 text-xs text-red-500 font-medium animate-in fade-in slide-in-from-top-1"
+        >
+          Please enter a valid business email address.
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="flex items-center justify-between mb-2">
+        <label class="block text-sm font-semibold text-[#c9d1d9]" for="password">Password</label>
+        <a
+          routerLink="/auth/forgot-password"
+          class="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-widest"
+          >Forgot?</a
+        >
+      </div>
+      <div class="relative group/field">
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          class="w-full bg-[#0d1117]/80 border border-[#30363d] rounded-2xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all text-[#f0f6fc] placeholder:text-[#484f58]"
+          [class.border-red-500]="isFieldInvalid('password')"
+          placeholder="••••••••"
+        />
+        <div
+          *ngIf="isFieldInvalid('password')"
+          class="mt-2 text-xs text-red-400 font-medium animate-in fade-in slide-in-from-top-1"
+        >
+          Minimum 6 characters required.
+        </div>
+      </div>
+    </div>
+
+    <button
+      type="submit"
+      [disabled]="loginForm.invalid"
+      class="w-full group/btn relative bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl transition-all shadow-[0_10px_30px_-5px_rgba(59,130,246,0.3)] active:scale-95 flex items-center justify-center gap-2"
+    >
+      <span>Identify & Access</span>
+      <svg
+        class="w-5 h-5 group-hover/btn:translate-x-1 transition-transform"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M13 7l5 5m0 0l-5 5m5-5H6"
+        ></path>
+      </svg>
+    </button>
+  </form>
+
+  <div class="mt-10 pt-8 border-t border-[#30363d] text-center">
+    <p class="text-sm text-[#8b949e] font-medium">
+      New to the enterprise?
+      <a
+        routerLink="/auth/register"
+        class="text-blue-400 font-bold hover:text-blue-300 transition-colors ml-1 underline decoration-2 underline-offset-4"
+        >Register Organization</a
+      >
+    </p>
+  </div>
+</div>

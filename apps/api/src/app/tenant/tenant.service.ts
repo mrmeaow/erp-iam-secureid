@@ -1,0 +1,54 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Membership } from './entities/membership.entity';
+import { Tenant } from './entities/tenant.entity';
+
+@Injectable()
+export class TenantService {
+  constructor(
+    @InjectRepository(Tenant)
+    private readonly tenantRepository: Repository<Tenant>,
+    @InjectRepository(Membership)
+    private readonly membershipRepository: Repository<Membership>,
+  ) {}
+
+  async create(name: string): Promise<Tenant> {
+    const tenant = this.tenantRepository.create({
+      name,
+    });
+    return this.tenantRepository.save(tenant);
+  }
+
+  async createMembership(
+    tenant_id: string,
+    user_id: string,
+    role_id: string,
+  ): Promise<Membership> {
+    const membership = this.membershipRepository.create({
+      tenant_id,
+      user_id,
+      role_id,
+    });
+    return this.membershipRepository.save(membership);
+  }
+
+  async findByDomainOrId(identifier: string): Promise<Tenant> {
+    const isUuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        identifier,
+      );
+
+    const tenant = await this.tenantRepository.findOne({
+      where: isUuid
+        ? [{ tenant_id: identifier }, { domain: identifier }]
+        : { domain: identifier },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException(`Tenant '${identifier}' not found`);
+    }
+
+    return tenant;
+  }
+}

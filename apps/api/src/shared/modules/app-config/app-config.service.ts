@@ -15,10 +15,18 @@ export class AppConfigService {
       name: this.cfg.getOrThrow<string>('APP_NAME'),
       port: this.cfg.getOrThrow<number>('PORT'),
       env: this.cfg.getOrThrow<string>('NODE_ENV'),
-      isDev: ['dev', 'development'].includes(this.cfg.getOrThrow<string>('NODE_ENV')),
-      isProd: ['prod', 'production'].includes(this.cfg.getOrThrow<string>('NODE_ENV')),
-      isStaging: ['staging', 'stage'].includes(this.cfg.getOrThrow<string>('NODE_ENV')),
-      isTest: ['test', 'testing'].includes(this.cfg.getOrThrow<string>('NODE_ENV')),
+      isDev: ['dev', 'development'].includes(
+        this.cfg.getOrThrow<string>('NODE_ENV'),
+      ),
+      isProd: ['prod', 'production'].includes(
+        this.cfg.getOrThrow<string>('NODE_ENV'),
+      ),
+      isStaging: ['staging', 'stage'].includes(
+        this.cfg.getOrThrow<string>('NODE_ENV'),
+      ),
+      isTest: ['test', 'testing'].includes(
+        this.cfg.getOrThrow<string>('NODE_ENV'),
+      ),
     };
   }
 
@@ -52,6 +60,7 @@ export class AppConfigService {
       refreshExpiry: this.cfg.get<string>('JWT_REFRESH_EXPIRY') ?? '7d',
       issuer: this.cfg.get<string>('JWT_ISSUER') ?? 'erpiam-svc',
       audience: this.cfg.get<string>('JWT_AUDIENCE') ?? 'erpiam-apps',
+      maxSessions: this.cfg.get<number>('JWT_MAX_SESSIONS') ?? 5,
     };
   }
 
@@ -90,8 +99,12 @@ export class AppConfigService {
   // ── OpenTelemetry ─────────────────────────────────────────────────────────
   get otel() {
     return {
-      tracesEndpoint: this.cfg.getOrThrow<string>('OTEL_EXPORTER_OTLP_TRACES_ENDPOINT'),
-      logsEndpoint: this.cfg.getOrThrow<string>('OTEL_EXPORTER_OTLP_LOGS_ENDPOINT'),
+      tracesEndpoint: this.cfg.getOrThrow<string>(
+        'OTEL_EXPORTER_OTLP_TRACES_ENDPOINT',
+      ),
+      logsEndpoint: this.cfg.getOrThrow<string>(
+        'OTEL_EXPORTER_OTLP_LOGS_ENDPOINT',
+      ),
     };
   }
 }
