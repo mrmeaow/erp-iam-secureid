@@ -1,0 +1,56 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between border-b border-primary-200 pb-5">
+    <div>
+      <h2 class="text-2xl font-bold text-primary-900 tracking-tight">Users & Teams</h2>
+      <p class="mt-1 text-sm text-primary-500">
+        Manage tenant memberships and role assignment.
+      </p>
+    </div>
+  </div>
+
+  <div class="bg-white border border-primary-200 rounded-lg shadow-sm overflow-hidden">
+    <table class="ent-table">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>User ID</th>
+          <th>Role</th>
+          <th class="w-24 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-primary-100">
+        @for (member of members(); track member.membership_id) {
+          <tr class="hover:bg-primary-50/50 transition-colors">
+            <td class="font-medium text-primary-900">{{ member.user?.email || '-' }}</td>
+            <td class="font-mono text-xs text-primary-600">{{ member.user_id }}</td>
+            <td>
+              <select
+                class="rounded border border-primary-300 px-2 py-1 text-xs"
+                [value]="member.role_id"
+                (change)="assignRole(member.user_id, $any($event.target).value)"
+              >
+                @for (role of roles(); track role.role_id) {
+                  <option [value]="role.role_id">{{ role.name }}</option>
+                }
+              </select>
+            </td>
+            <td class="text-right">
+              <button
+                class="btn-secondary py-1 px-2 text-xs"
+                (click)="removeMember(member.user_id)"
+              >
+                Remove
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="py-12 text-center text-primary-400">
+              No members found for active tenant.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

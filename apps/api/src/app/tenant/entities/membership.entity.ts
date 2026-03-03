@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn,
 } from 'typeorm';
 import { Role } from '../../role/entities/role.entity';
 import { User } from '../../user/entities/user.entity';
@@ -45,6 +45,10 @@ export class Membership {
   @ApiProperty()
   @Column({ type: 'boolean', default: true })
   is_active: boolean;
+
+  @ApiProperty({ required: false, nullable: true })
+  @Column({ type: 'jsonb', nullable: true })
+  permissions?: any;
 
   @ApiProperty()
   @CreateDateColumn()

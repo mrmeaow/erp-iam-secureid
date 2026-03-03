@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import 'reflect-metadata';
 
 import '#config/opentelemetry';
@@ -13,7 +11,10 @@ import {
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import { Logger } from 'nestjs-pino';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { AppModule } from './app.module';
+import { PermissionGuard } from './app/auth/guards/permission.guard';
 import { AppConfigService } from './shared/modules/app-config/app-config.service';
 
 async function bootstrap() {
@@ -35,14 +36,15 @@ async function bootstrap() {
     origin: ['http://localhost:4200', 'http://127.0.0.1:4200'],
     credentials: true,
   });
+  app.useGlobalGuards(app.get(PermissionGuard));
 
   // Swagger setup`
-  const introPath = join(__dirname, 'config/docs/intro.md');
-  const intro = readFileSync(introPath, 'utf8');
+  const apiMdDocPath = join(__dirname, 'config/docs/api-docs.md');
+  const apiMdDoc = readFileSync(apiMdDocPath, 'utf8');
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('SECURE.ID API')
-    .setDescription(intro)
+    .setDescription(apiMdDoc)
     .setVersion('1.0')
     .addBearerAuth()
     .build();
@@ -53,7 +55,7 @@ async function bootstrap() {
 
   // Serve JSON
   const fastify = app.getHttpAdapter().getInstance();
-  fastify.get('/openapi.json', async (request, reply) => {
+  fastify.get('/openapi.json', async (_request, reply) => {
     reply.header('Content-Type', 'application/json').send(document);
   });
 

@@ -8,7 +8,10 @@ import { AppConfigService } from './app-config.service';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env.local', '.env'],
+      envFilePath: [
+        process.env.NODE_ENV === 'test' ? '.env.test' : '.env.local',
+        '.env',
+      ],
       validate: validateEnv,
     }),
   ],

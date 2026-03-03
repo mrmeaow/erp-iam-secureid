@@ -23,6 +23,16 @@ export class AuthService {
   isAuthenticated = signal<boolean>(false);
 
   constructor() {
+    const token = this.getAccessToken();
+    if (token) {
+      try {
+        this.currentUser.set(this.decodeToken(token));
+        this.isAuthenticated.set(true);
+      } catch {
+        this.currentUser.set(null);
+        this.isAuthenticated.set(false);
+      }
+    }
     this.bootSession();
   }
 
@@ -31,14 +41,15 @@ export class AuthService {
     if (token) {
       try {
         // 1. Decipher user immediately for UI
-        const payload = JSON.parse(atob(token.split('.')[1])) as UserProfile;
+        const payload = this.decodeToken(token);
         this.currentUser.set(payload);
         this.isAuthenticated.set(true);
 
         // 2. Background verify profile for fresh data
         await this.getMe();
       } catch {
-        await this.logout();
+        // Do not aggressively logout on transient boot-time failures.
+        // Keep decoded session and let interceptor refresh flow handle 401s.
       }
     }
   }
@@ -95,7 +106,15 @@ export class AuthService {
       throw new Error(response.message || 'Failed to fetch profile');
     }
 
-    const profile = response.data as UserProfile;
+    const data = response.data as any;
+    const profile: UserProfile = {
+      sub: data.sub,
+      email: data.email,
+      tenantId: data.tenantId,
+      isVerified: data.isVerified,
+      roles: data.roles || [],
+      permissions: data.permissions || []
+    };
     this.currentUser.set(profile);
     return profile;
   }
@@ -105,9 +124,26 @@ export class AuthService {
     localStorage.setItem(this.REFRESH_TOKEN_KEY, tokens.refreshToken);
 
     // Immediate state update from JWT
-    const payload = JSON.parse(atob(tokens.accessToken.split('.')[1])) as UserProfile;
+    const payload = this.decodeToken(tokens.accessToken);
     this.currentUser.set(payload);
     this.isAuthenticated.set(true);
+  }
+
+  private decodeToken(token: string): UserProfile {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return {
+        sub: payload.sub,
+        email: payload.email,
+        tenantId: payload.tenantId,
+        isVerified: payload.isVerified,
+        roles: payload.roles || [],
+        permissions: payload.permissions || []
+      };
+    } catch (e) {
+      console.error('Failed to decode token', e);
+      throw e;
+    }
   }
 
   getAccessToken(): string | null {
@@ -150,6 +186,15 @@ export class AuthService {
       body: { token } as ApiVerifyEmailDto,
     });
     if (!response.success) throw new Error(response.message || 'Verification failed');
+
+    // Keep current session state in sync after verification.
+    if (this.isAuthenticated() || !!this.getAccessToken()) {
+      try {
+        await this.getMe();
+      } catch {
+        // Ignore sync failure; verification was already successful.
+      }
+    }
   }
 
   async changePassword(dto: ApiChangePasswordDto): Promise<void> {

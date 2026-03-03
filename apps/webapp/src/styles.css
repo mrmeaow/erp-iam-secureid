@@ -1,3 +1,67 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import "tailwindcss";
+
+@theme {
+  --color-primary-50: #f4f6f8;
+  --color-primary-100: #e8edf2;
+  --color-primary-200: #d8e1ea;
+  --color-primary-300: #bdc9d6;
+  --color-primary-400: #98a8ba;
+  --color-primary-500: #74879d;
+  --color-primary-600: #5a6e84;
+  --color-primary-700: #45586d;
+  --color-primary-800: #324357;
+  --color-primary-900: #202f41;
+  --color-primary-950: #141f2f;
+
+  --color-brand-600: #1f6f8b;
+  --color-brand-700: #17586f;
+
+  --font-sans: "Inter", "Outfit", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html, body {
+    @apply h-full bg-primary-100 text-primary-900 antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  body {
+    background-image:
+      radial-gradient(circle at 10% 10%, rgba(31, 111, 139, 0.08), transparent 40%),
+      radial-gradient(circle at 90% 0%, rgba(69, 88, 109, 0.07), transparent 30%);
+    background-attachment: fixed;
+  }
+
+  /* Enterprise Table Standard */
+  .ent-table {
+    @apply w-full text-left border-collapse text-sm;
+  }
+  .ent-table th {
+    @apply py-3 px-4 bg-primary-100 border-b border-primary-200 font-medium text-primary-600 uppercase tracking-wider;
+  }
+  .ent-table td {
+    @apply py-3 px-4 border-b border-primary-100;
+  }
+
+  /* Enterprise Button Standard */
+  .btn-primary {
+    @apply inline-flex items-center px-4 py-2 bg-brand-600 text-white font-medium rounded-md hover:bg-brand-700 transition-colors shadow-sm disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center px-4 py-2 border border-primary-300 bg-primary-50 text-primary-800 font-medium rounded-md hover:bg-primary-100 transition-colors;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  @layer base {
+    html, body {
+      @apply bg-primary-950 text-primary-100;
+    }
+
+    body {
+      background-image:
+        radial-gradient(circle at 10% 10%, rgba(31, 111, 139, 0.14), transparent 40%),
+        radial-gradient(circle at 90% 0%, rgba(189, 201, 214, 0.08), transparent 30%);
+    }
+  }
+}

@@ -11,5 +11,7 @@
     "^#shared(|/.*)$": "<rootDir>/../src/shared/$1",
     "^#lib(|/.*)$": "<rootDir>/../src/libs/$1",
     "^#config(|/.*)$": "<rootDir>/../src/config/$1"
-  }
+  },
+  "testTimeout": 60000,
+  "maxWorkers": 1
 }

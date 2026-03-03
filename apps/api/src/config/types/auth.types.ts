@@ -1,7 +1,7 @@
 export type JwtPayload = {
   sub: string;
   email: string;
-  tenantId: string;
+  tenantId?: string;
   jti: string;
   isVerified: boolean;
 };

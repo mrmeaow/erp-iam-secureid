@@ -1,0 +1,96 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex items-center justify-between border-b border-primary-200 pb-5">
+    <div>
+      <h2 class="text-2xl font-bold text-primary-900 tracking-tight">Products</h2>
+      <p class="mt-1 text-sm text-primary-500">Manage your product inventory and prices.</p>
+    </div>
+    
+    <button *hasPermission="'PRODUCTS:WRITE'" 
+            class="btn-primary gap-2"
+            (click)="createProduct()">
+      <span class="material-symbols-outlined text-[18px]">add</span>
+      Add Product
+    </button>
+  </div>
+
+  <!-- Table Container -->
+  <div class="bg-white border border-primary-200 rounded-lg shadow-sm overflow-hidden">
+    <table class="ent-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>SKU</th>
+          <th>Price</th>
+          <th>Status</th>
+          <th class="w-24 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-primary-100">
+        @for (product of products(); track product.product_id) {
+          <tr class="hover:bg-primary-50/50 transition-colors">
+            <td class="font-medium text-primary-900">{{ product.name }}</td>
+            <td class="text-primary-600 font-mono text-xs">{{ product.sku }}</td>
+            <td>
+              <span class="font-semibold text-primary-900">${{ product.price }}</span>
+            </td>
+            <td>
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700 border border-green-200">
+                In Stock
+              </span>
+            </td>
+            <td class="text-right">
+              <div class="flex items-center justify-end gap-1">
+                <!-- Edit Action: Restricted by Record Level Access (ABAC/ACL) -->
+                @if ('PRODUCTS' | canAccess:'WRITE':product) {
+                  <button
+                    class="p-1.5 text-primary-400 hover:text-brand-600 hover:bg-brand-50 rounded transition-all"
+                    title="Edit Product"
+                    (click)="editProduct(product)"
+                  >
+                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                  </button>
+                }
+
+                @if ('PRODUCTS' | canAccess:'WRITE':product) {
+                  <button (click)="deleteProduct(product)"
+                          class="p-1.5 text-primary-400 hover:text-red-600 hover:bg-red-50 rounded transition-all" title="Delete Product">
+                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                  </button>
+                }
+
+                <!-- View Detail: Minimum Permission -->
+                <button
+                  class="p-1.5 text-primary-400 hover:text-primary-900 hover:bg-primary-100 rounded transition-all"
+                  title="View Details"
+                  (click)="viewProduct(product)"
+                >
+                  <span class="material-symbols-outlined text-[18px]">visibility</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="py-12 text-center text-primary-400">
+              <div class="flex flex-col items-center gap-2">
+                <span class="material-symbols-outlined text-4xl">inventory_2</span>
+                <p>No products found in this tenant.</p>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Verification Info Block (Dev Only) -->
+  <div class="p-4 bg-brand-50 border border-brand-100 rounded text-xs text-brand-800">
+    <div class="flex items-center gap-2 font-bold mb-1">
+      <span class="material-symbols-outlined text-[14px]">info</span>
+      ENFORCEMENT VERIFICATION
+    </div>
+    <p>This table enforces both <b>RBAC</b> (Role-based) and <b>ABAC</b> (Attribute-based) access control. 
+       The "Add Product" button is RBAC-only, while "Edit" and "Delete" are restricted to the record owner or admin.</p>
+  </div>
+</div>

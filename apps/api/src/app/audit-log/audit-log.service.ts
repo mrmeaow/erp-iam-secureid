@@ -14,4 +14,12 @@ export class AuditLogService {
     const logEntry = this.auditLogRepository.create(data);
     return this.auditLogRepository.save(logEntry);
   }
+
+  async findAll(tenantId: string): Promise<AuditLog[]> {
+    return this.auditLogRepository.find({
+      where: { tenant_id: tenantId },
+      order: { created_at: 'DESC' },
+      take: 100,
+    });
+  }
 }

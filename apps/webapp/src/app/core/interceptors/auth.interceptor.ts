@@ -1,15 +1,19 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, from, switchMap, throwError } from 'rxjs';
+import { ApiConfiguration } from '../api/api-configuration';
 import { AuthService } from '../services/auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
+  const apiConfig = inject(ApiConfiguration);
   const token = authService.getAccessToken();
+  const rootUrl = (apiConfig.rootUrl || '').replace(/\/$/, '');
+  const isApiCall = rootUrl ? req.url.startsWith(rootUrl) : req.url.startsWith('/v1/');
 
   let authReq = req;
   // Attach JWT if available and request is to our API
-  if (token && (req.url.includes('127.0.0.1:3333') || req.url.includes('localhost:3333'))) {
+  if (token && isApiCall) {
     authReq = req.clone({
       headers: req.headers.set('Authorization', `Bearer ${token}`),
     });

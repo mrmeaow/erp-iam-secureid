@@ -1,0 +1,79 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between border-b border-primary-200 pb-5">
+    <div>
+      <h2 class="text-2xl font-bold text-primary-900 tracking-tight">Roles & Permissions</h2>
+      <p class="mt-1 text-sm text-primary-500">Create tenant roles and assign permission bundles.</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <section class="bg-white border border-primary-200 rounded-lg p-5 space-y-4">
+      <h3 class="text-sm font-semibold text-primary-900">Create Role</h3>
+      <div class="flex gap-2">
+        <input
+          type="text"
+          class="flex-1 rounded border border-primary-300 px-3 py-2 text-sm"
+          [value]="newRoleName()"
+          (input)="setRoleName($any($event.target).value)"
+          placeholder="Role name (e.g. MANAGER)"
+        />
+        <button class="btn-primary px-3" (click)="createRole()">Create</button>
+      </div>
+
+      <h3 class="text-sm font-semibold text-primary-900 pt-2">Roles</h3>
+      <div class="space-y-2 max-h-96 overflow-auto pr-1">
+        @for (role of roles(); track role.role_id) {
+          <button
+            class="w-full text-left rounded border px-3 py-2 text-sm transition-colors"
+            [class.border-brand-600]="selectedRoleId() === role.role_id"
+            [class.bg-brand-50]="selectedRoleId() === role.role_id"
+            [class.border-primary-200]="selectedRoleId() !== role.role_id"
+            (click)="selectRole(role.role_id)"
+          >
+            <div class="font-medium text-primary-900">{{ role.name }}</div>
+            <div class="text-xs text-primary-500">
+              {{ role.permissions?.length || 0 }} permissions
+            </div>
+          </button>
+        } @empty {
+          <p class="text-sm text-primary-500">No roles found.</p>
+        }
+      </div>
+    </section>
+
+    <section class="lg:col-span-2 bg-white border border-primary-200 rounded-lg p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-semibold text-primary-900">Assign Permissions</h3>
+        <button class="btn-primary px-3" [disabled]="!selectedRoleId()" (click)="savePermissions()">
+          Save
+        </button>
+      </div>
+
+      <div *ngIf="!selectedRoleId()" class="text-sm text-primary-500">
+        Select a role to manage permissions.
+      </div>
+
+      <div *ngIf="selectedRoleId()" class="grid grid-cols-1 md:grid-cols-2 gap-2">
+        @for (permission of permissions(); track permission.permission_id) {
+          <label class="flex items-start gap-2 rounded border border-primary-200 p-2 text-sm cursor-pointer">
+            <input
+              type="checkbox"
+              [checked]="selectedPermissionIds().includes(permission.permission_id)"
+              (change)="togglePermission(permission.permission_id)"
+            />
+            <span>
+              <span class="block font-medium text-primary-900">
+                {{ permission.label || (permission.resource + ':' + permission.action) }}
+              </span>
+              <span class="block text-xs text-primary-500">
+                {{ permission.resource }}:{{ permission.action }}
+              </span>
+            </span>
+          </label>
+        } @empty {
+          <p class="text-sm text-primary-500">No permissions available.</p>
+        }
+      </div>
+    </section>
+  </div>
+</div>

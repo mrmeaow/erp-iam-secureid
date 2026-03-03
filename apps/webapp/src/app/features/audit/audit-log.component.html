@@ -1,0 +1,72 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex items-center justify-between border-b border-primary-200 pb-5">
+    <div>
+      <h2 class="text-2xl font-bold text-primary-900 tracking-tight">Audit Logs</h2>
+      <p class="mt-1 text-sm text-primary-500">Track all security and modification events within your tenant.</p>
+    </div>
+    
+    <div class="flex gap-2">
+       <button (click)="loadLogs()" class="btn-secondary py-1.5 px-3 text-xs gap-2">
+         <span class="material-symbols-outlined text-[16px]">refresh</span>
+         Refresh
+       </button>
+    </div>
+  </div>
+
+  <!-- Industrial Table Container -->
+  <div class="bg-white border border-primary-200 rounded-lg shadow-sm overflow-hidden">
+    <table class="ent-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>User</th>
+          <th>Action</th>
+          <th>Resource</th>
+          <th>Status</th>
+          <th>IP Address</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-primary-100">
+        @for (log of logs(); track log.id) {
+          <tr class="hover:bg-primary-50/50 transition-colors text-xs">
+            <td class="text-primary-500 whitespace-nowrap">{{ log.created_at | date:'medium' }}</td>
+            <td class="font-medium text-primary-900">
+              <div class="flex flex-col">
+                <span>{{ log.actor_email || 'System' }}</span>
+                <span class="text-[9px] text-primary-400 font-mono">{{ log.actor_id }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="font-semibold text-primary-700 uppercase tracking-tight text-[10px]">
+                {{ formatAction(log.action) }}
+              </span>
+            </td>
+            <td>
+              <div class="flex flex-col">
+                <span class="font-medium">{{ log.resource_type || 'N/A' }}</span>
+                <span class="text-[9px] text-primary-400 font-mono">{{ log.resource_id || '-' }}</span>
+              </div>
+            </td>
+            <td>
+              <!-- Handling status - case insensitive check in component -->
+              <span [class]="'inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold border uppercase ' + getStatusClass(getStatusLabel(log))">
+                {{ getStatusLabel(log) }}
+              </span>
+            </td>
+            <td class="text-primary-500 font-mono">{{ log.ip_address || 'internal' }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="py-12 text-center text-primary-400">
+              <div class="flex flex-col items-center gap-2">
+                <span class="material-symbols-outlined text-4xl">history_toggle_off</span>
+                <p>No audit logs matching criteria.</p>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

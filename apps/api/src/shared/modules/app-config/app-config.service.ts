@@ -107,4 +107,11 @@ export class AppConfigService {
       ),
     };
   }
+
+  // ── MongoDB ───────────────────────────────────────────────────────────────
+  get mongo() {
+    return {
+      uri: this.cfg.getOrThrow<string>('MONGO_URI'),
+    };
+  }
 }

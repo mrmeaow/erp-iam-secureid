@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class RegisterDto {
   @ApiProperty({ example: 'newuser@erpiam.local' })
@@ -17,8 +17,8 @@ export class RegisterDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ example: 'Acme Corp' })
+  @ApiProperty({ example: 'Acme Corp', required: false })
   @IsString()
-  @IsNotEmpty()
-  companyName: string;
+  @IsOptional()
+  companyName?: string;
 }

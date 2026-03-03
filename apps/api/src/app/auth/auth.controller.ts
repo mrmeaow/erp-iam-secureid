@@ -1,18 +1,18 @@
 import { JwtPayload } from '#config/types/auth.types';
 import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  Post,
-  Req,
-  UseGuards,
+    Body,
+    Controller,
+    Get,
+    HttpCode,
+    Post,
+    Req,
+    UseGuards,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
+    ApiBearerAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
 } from '@nestjs/swagger';
 import type { FastifyRequest } from 'fastify';
 import { SuccessResponseDto } from '../../shared/dto/response.dto';
@@ -23,6 +23,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
+import { RegisterUserDto } from './dto/register-user.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
@@ -42,6 +43,17 @@ export class AuthController {
   )
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
+  }
+
+  @Post('register-user')
+  @ApiOperation({ summary: 'Register a new user only (no company/tenant)' })
+  @ApiSuccessResponse(
+    AuthTokensDto,
+    201,
+    'Successfully registered user.',
+  )
+  async registerUser(@Body() registerDto: RegisterUserDto) {
+    return this.authService.registerUser(registerDto);
   }
 
   @Post('login')

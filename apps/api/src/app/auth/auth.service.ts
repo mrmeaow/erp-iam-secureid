@@ -1,10 +1,10 @@
 import { Hash } from '#lib/hash';
 import { AppConfigService } from '#shared/modules/app-config/app-config.service';
 import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  UnauthorizedException,
+    BadRequestException,
+    ConflictException,
+    Injectable,
+    UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomBytes } from 'crypto';
@@ -17,6 +17,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
+import { RegisterUserDto } from './dto/register-user.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
@@ -48,45 +49,90 @@ export class AuthService {
     // 1. Create User
     const user = await this.userService.create({
       email: registerDto.email,
+      name: registerDto.name,
       hashed_password: hashedPassword,
       is_active: true,
       is_verified: false,
       verification_token: verificationToken,
     });
 
-    // 2. Create Tenant
-    const tenant = await this.tenantService.create(registerDto.companyName);
+    // 2. Create Tenant (Optional)
+    let tenant_id: string | undefined;
 
-    // 3. Ensure Default Roles for this Tenant and get OWNER role
-    const ownerRole = await this.roleService.ensureDefaultRoles(
-      tenant.tenant_id,
-    );
+    if (registerDto.companyName) {
+      const tenant = await this.tenantService.create(registerDto.companyName);
+      tenant_id = tenant.tenant_id;
 
-    // 4. Create Membership (Owner)
-    await this.tenantService.createMembership(
-      tenant.tenant_id,
-      user.user_id,
-      ownerRole.role_id,
-    );
+      // 3. Ensure Default Roles for this Tenant and get OWNER role
+      const ownerRole = await this.roleService.ensureDefaultRoles(tenant_id);
 
-    await this.auditLogService.log({
-      event: 'user.registered',
-      user_id: user.user_id,
-      tenant_id: tenant.tenant_id,
-      payload: { email: user.email, company: tenant.name },
-    });
+      // 4. Create Membership (Owner)
+      await this.tenantService.createMembership(
+        tenant_id,
+        user.user_id,
+        ownerRole.role_id,
+      );
 
-    // For session, we need a tenant context. For new registration, it's the one they just created.
-    const tokens = await this.sessionService.createSession(
-      user,
-      tenant.tenant_id,
-    );
+      await this.auditLogService.log({
+        action: 'user.registered_with_tenant',
+        actor_id: user.user_id,
+        actor_email: user.email,
+        tenant_id: tenant_id,
+        payload: { email: user.email, company: registerDto.companyName },
+      });
+    } else {
+      await this.auditLogService.log({
+        action: 'user.registered',
+        actor_id: user.user_id,
+        actor_email: user.email,
+        payload: { email: user.email },
+      });
+    }
+
+    // For session, we need a tenant context. If no tenant, they get a user-only session.
+    const tokens = await this.sessionService.createSession(user, tenant_id);
 
     // 5. Send Emails (Async via BullMQ)
     await this.mailService.sendWelcomeEmail({
       email: user.email,
     });
 
+    await this.mailService.sendVerificationEmail({
+      email: user.email,
+      token: verificationToken,
+    });
+
+    return tokens;
+  }
+
+  async registerUser(registerDto: RegisterUserDto) {
+    const existing = await this.userService.findByEmail(registerDto.email);
+    if (existing) {
+      throw new ConflictException('User already registered in the system');
+    }
+
+    const hashedPassword = await Hash.make(registerDto.password);
+    const verificationToken = randomBytes(32).toString('hex');
+
+    const user = await this.userService.create({
+      email: registerDto.email,
+      name: registerDto.name,
+      hashed_password: hashedPassword,
+      is_active: true,
+      is_verified: false,
+      verification_token: verificationToken,
+    });
+
+    await this.auditLogService.log({
+      action: 'user.registered_only',
+      actor_id: user.user_id,
+      actor_email: user.email,
+      payload: { email: user.email },
+    });
+
+    const tokens = await this.sessionService.createSession(user);
+
+    await this.mailService.sendWelcomeEmail({ email: user.email });
     await this.mailService.sendVerificationEmail({
       email: user.email,
       token: verificationToken,
@@ -110,8 +156,9 @@ export class AuthService {
     await this.userService.updateLastLogin(user.user_id);
 
     await this.auditLogService.log({
-      event: 'user.login',
-      user_id: user.user_id,
+      action: 'user.login',
+      actor_id: user.user_id,
+      actor_email: user.email,
     });
 
     return this.sessionService.createSession(user);
@@ -153,6 +200,34 @@ export class AuthService {
     await this.sessionService.revokeSession(userId, jti);
   }
 
+  async switchTenant(userId: string, jti: string, tenantId: string) {
+    const hasMembership = await this.tenantService.hasActiveMembership(
+      tenantId,
+      userId,
+    );
+    if (!hasMembership) {
+      throw new UnauthorizedException('No active membership for target tenant');
+    }
+
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    await this.sessionService.revokeSession(userId, jti);
+    const tokens = await this.sessionService.createSession(user, tenantId);
+
+    await this.auditLogService.log({
+      action: 'user.tenant_switched',
+      actor_id: user.user_id,
+      actor_email: user.email,
+      tenant_id: tenantId,
+      payload: { from_session: jti },
+    });
+
+    return tokens;
+  }
+
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
     const user = await this.userService.findByEmail(forgotPasswordDto.email);
     if (user) {
@@ -171,8 +246,9 @@ export class AuthService {
       });
 
       await this.auditLogService.log({
-        event: 'user.forgot_password_requested',
-        user_id: user.user_id,
+        action: 'user.forgot_password_requested',
+        actor_id: user.user_id,
+        actor_email: user.email,
       });
     }
     return {
@@ -198,8 +274,9 @@ export class AuthService {
     });
 
     await this.auditLogService.log({
-      event: 'user.password_reset_success',
-      user_id: user.user_id,
+      action: 'user.password_reset_success',
+      actor_id: user.user_id,
+      actor_email: user.email,
     });
 
     return { success: true };
@@ -223,8 +300,9 @@ export class AuthService {
     await this.userService.updatePassword(userId, hashedPassword);
 
     await this.auditLogService.log({
-      event: 'user.password_changed',
-      user_id: userId,
+      action: 'user.password_changed',
+      actor_id: userId,
+      actor_email: user.email,
     });
 
     return { success: true };
@@ -244,8 +322,9 @@ export class AuthService {
     });
 
     await this.auditLogService.log({
-      event: 'user.email_verified',
-      user_id: user.user_id,
+      action: 'user.email_verified',
+      actor_id: user.user_id,
+      actor_email: user.email,
     });
 
     return { success: true };

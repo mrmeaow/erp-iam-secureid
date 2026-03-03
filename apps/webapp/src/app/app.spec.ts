@@ -14,10 +14,11 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render title', async () => {
+  it('should render shell components', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, webapp');
+    expect(compiled.querySelector('app-toast-container')).toBeTruthy();
+    expect(compiled.querySelector('app-loading-overlay')).toBeTruthy();
   });
 });

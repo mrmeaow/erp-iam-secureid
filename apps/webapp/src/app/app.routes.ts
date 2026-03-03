@@ -54,7 +54,37 @@ export const routes: Routes = [
           import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
       },
       {
-        path: 'settings/change-password',
+        path: 'products',
+        loadComponent: () =>
+          import('./features/products/product-list.component').then((m) => m.ProductListComponent),
+      },
+      {
+        path: 'tenants',
+        loadComponent: () =>
+          import('./features/tenants/tenant-list.component').then((m) => m.TenantListComponent),
+      },
+      {
+        path: 'roles',
+        loadComponent: () =>
+          import('./features/roles/role-list.component').then((m) => m.RoleListComponent),
+      },
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./features/users/user-list.component').then((m) => m.UserListComponent),
+      },
+      {
+        path: 'audit',
+        loadComponent: () =>
+          import('./features/audit/audit-log.component').then((m) => m.AuditLogComponent),
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./features/profile/profile.component').then((m) => m.ProfileComponent),
+      },
+      {
+        path: 'settings',
         loadComponent: () =>
           import('./features/settings/change-password/change-password.component').then(
             (m) => m.ChangePasswordComponent,
