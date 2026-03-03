@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import 'reflect-metadata';
 
 import '#config/opentelemetry';
@@ -13,6 +11,8 @@ import {
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import { Logger } from 'nestjs-pino';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { AppModule } from './app.module';
 import { AppConfigService } from './shared/modules/app-config/app-config.service';
 

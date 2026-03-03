@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  Unique,
-  UpdateDateColumn,
+    Column,
+    CreateDateColumn,
+    Entity,
+    PrimaryGeneratedColumn,
+    Unique,
+    UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('users')
@@ -19,6 +19,10 @@ export class User {
   @ApiProperty({ description: 'The email address of the user.' })
   @Column({ type: 'varchar', length: 255 })
   email: string;
+
+  @ApiProperty({ description: 'The full name of the user.', required: false })
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  name?: string;
 
   @Exclude()
   @Column({ type: 'varchar', length: 255 })

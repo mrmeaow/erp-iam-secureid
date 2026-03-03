@@ -51,4 +51,50 @@ export class TenantService {
 
     return tenant;
   }
+
+  async getUserMemberships(userId: string): Promise<Membership[]> {
+    return this.membershipRepository.find({
+      where: { user_id: userId, is_active: true },
+      relations: ['tenant', 'role'],
+    });
+  }
+
+  async getTenantMembers(tenantId: string): Promise<Membership[]> {
+    return this.membershipRepository.find({
+      where: { tenant_id: tenantId },
+      relations: ['user', 'role'],
+    });
+  }
+
+  async addMember(
+    tenantId: string,
+    userId: string,
+    roleId: string,
+    permissions?: any,
+  ): Promise<Membership> {
+    const existing = await this.membershipRepository.findOne({
+      where: { tenant_id: tenantId, user_id: userId },
+    });
+    if (existing) {
+      existing.is_active = true;
+      existing.role_id = roleId;
+      existing.permissions = permissions;
+      return this.membershipRepository.save(existing);
+    }
+
+    const membership = this.membershipRepository.create({
+      tenant_id: tenantId,
+      user_id: userId,
+      role_id: roleId,
+      permissions,
+    });
+    return this.membershipRepository.save(membership);
+  }
+
+  async removeMember(tenantId: string, userId: string): Promise<void> {
+    await this.membershipRepository.delete({
+      tenant_id: tenantId,
+      user_id: userId,
+    });
+  }
 }

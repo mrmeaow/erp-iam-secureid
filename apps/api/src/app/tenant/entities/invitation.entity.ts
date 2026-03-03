@@ -9,22 +9,24 @@ import {
     UpdateDateColumn,
 } from 'typeorm';
 import { Role } from '../../role/entities/role.entity';
-import { User } from '../../user/entities/user.entity';
 import { Tenant } from './tenant.entity';
 
-@Entity('memberships')
-export class Membership {
+export enum InvitationStatus {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  DECLINED = 'DECLINED',
+  EXPIRED = 'EXPIRED',
+}
+
+@Entity('invitations')
+export class Invitation {
   @ApiProperty()
   @PrimaryGeneratedColumn('uuid')
-  membership_id: string;
+  invitation_id: string;
 
   @ApiProperty()
-  @Column({ type: 'uuid' })
-  user_id: string;
-
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
-  user: User;
+  @Column({ type: 'varchar', length: 255 })
+  email: string;
 
   @ApiProperty()
   @Column({ type: 'uuid' })
@@ -38,17 +40,29 @@ export class Membership {
   @Column({ type: 'uuid' })
   role_id: string;
 
-  @ManyToOne(() => Role, { onDelete: 'SET NULL', nullable: true })
+  @ManyToOne(() => Role, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'role_id' })
   role: Role;
-
-  @ApiProperty()
-  @Column({ type: 'boolean', default: true })
-  is_active: boolean;
 
   @ApiProperty({ required: false, nullable: true })
   @Column({ type: 'jsonb', nullable: true })
   permissions?: any;
+
+  @ApiProperty()
+  @Column({ type: 'varchar', length: 255, unique: true })
+  token: string;
+
+  @ApiProperty({ enum: InvitationStatus })
+  @Column({
+    type: 'enum',
+    enum: InvitationStatus,
+    default: InvitationStatus.PENDING,
+  })
+  status: InvitationStatus;
+
+  @ApiProperty({ required: false, nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
+  expires_at?: Date;
 
   @ApiProperty()
   @CreateDateColumn()

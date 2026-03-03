@@ -1,5 +1,5 @@
 import { JwtPayload } from '#config/types/auth.types';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'crypto';
@@ -31,10 +31,7 @@ export class SessionService {
       const membership = await this.membershipRepository.findOne({
         where: { user_id: user.user_id, is_active: true },
       });
-      if (!membership) {
-        throw new UnauthorizedException('User has no active memberships');
-      }
-      targetTenantId = membership.tenant_id;
+      targetTenantId = membership?.tenant_id;
     }
 
     const jti = randomBytes(16).toString('hex');

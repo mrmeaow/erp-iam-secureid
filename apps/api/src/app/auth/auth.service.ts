@@ -17,6 +17,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
+import { RegisterUserDto } from './dto/register-user.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
@@ -48,45 +49,87 @@ export class AuthService {
     // 1. Create User
     const user = await this.userService.create({
       email: registerDto.email,
+      name: registerDto.name,
       hashed_password: hashedPassword,
       is_active: true,
       is_verified: false,
       verification_token: verificationToken,
     });
 
-    // 2. Create Tenant
-    const tenant = await this.tenantService.create(registerDto.companyName);
+    // 2. Create Tenant (Optional)
+    let tenant_id: string | undefined;
 
-    // 3. Ensure Default Roles for this Tenant and get OWNER role
-    const ownerRole = await this.roleService.ensureDefaultRoles(
-      tenant.tenant_id,
-    );
+    if (registerDto.companyName) {
+      const tenant = await this.tenantService.create(registerDto.companyName);
+      tenant_id = tenant.tenant_id;
 
-    // 4. Create Membership (Owner)
-    await this.tenantService.createMembership(
-      tenant.tenant_id,
-      user.user_id,
-      ownerRole.role_id,
-    );
+      // 3. Ensure Default Roles for this Tenant and get OWNER role
+      const ownerRole = await this.roleService.ensureDefaultRoles(tenant_id);
 
-    await this.auditLogService.log({
-      event: 'user.registered',
-      user_id: user.user_id,
-      tenant_id: tenant.tenant_id,
-      payload: { email: user.email, company: tenant.name },
-    });
+      // 4. Create Membership (Owner)
+      await this.tenantService.createMembership(
+        tenant_id,
+        user.user_id,
+        ownerRole.role_id,
+      );
 
-    // For session, we need a tenant context. For new registration, it's the one they just created.
-    const tokens = await this.sessionService.createSession(
-      user,
-      tenant.tenant_id,
-    );
+      await this.auditLogService.log({
+        event: 'user.registered_with_tenant',
+        user_id: user.user_id,
+        tenant_id: tenant_id,
+        payload: { email: user.email, company: registerDto.companyName },
+      });
+    } else {
+      await this.auditLogService.log({
+        event: 'user.registered',
+        user_id: user.user_id,
+        payload: { email: user.email },
+      });
+    }
+
+    // For session, we need a tenant context. If no tenant, they get a user-only session.
+    const tokens = await this.sessionService.createSession(user, tenant_id);
 
     // 5. Send Emails (Async via BullMQ)
     await this.mailService.sendWelcomeEmail({
       email: user.email,
     });
 
+    await this.mailService.sendVerificationEmail({
+      email: user.email,
+      token: verificationToken,
+    });
+
+    return tokens;
+  }
+
+  async registerUser(registerDto: RegisterUserDto) {
+    const existing = await this.userService.findByEmail(registerDto.email);
+    if (existing) {
+      throw new ConflictException('User already registered in the system');
+    }
+
+    const hashedPassword = await Hash.make(registerDto.password);
+    const verificationToken = randomBytes(32).toString('hex');
+
+    const user = await this.userService.create({
+      email: registerDto.email,
+      name: registerDto.name,
+      hashed_password: hashedPassword,
+      is_active: true,
+      is_verified: false,
+      verification_token: verificationToken,
+    });
+
+    await this.auditLogService.log({
+      event: 'user.registered_only',
+      user_id: user.user_id,
+      payload: { email: user.email },
+    });
+
+    const tokens = await this.sessionService.createSession(user);
+
+    await this.mailService.sendWelcomeEmail({ email: user.email });
     await this.mailService.sendVerificationEmail({
       email: user.email,
       token: verificationToken,

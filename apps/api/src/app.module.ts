@@ -1,4 +1,6 @@
 import { AuthModule, UserModule } from '#app';
+import { PermissionModule } from '#app/permission/permission.module';
+import { ProductModule } from '#app/product/product.module';
 import { censorObject } from '#config/censor.config';
 import { GlobalExceptionFilter } from '#config/filters/global-exception';
 import { ResponseInterceptor } from '#config/interceptors/response';
@@ -64,19 +66,27 @@ import { RedisModule } from './shared/modules/redis/redis.module';
               ? censorObject(res.locals.body)
               : undefined,
           }),
-          transport: {
-            target: '@openobserve/pino-openobserve',
-            options: {
-              url: cfg.openObserve.url,
-              organization: cfg.openObserve.organization,
-              streamName: cfg.openObserve.streamName,
-              auth: {
-                username: cfg.openObserve.username,
-                password: cfg.openObserve.password,
+          transport: cfg.app.isTest
+            ? {
+                target: 'pino-pretty',
+                options: {
+                  colorize: true,
+                  singleLine: true,
+                },
+              }
+            : {
+                target: '@openobserve/pino-openobserve',
+                options: {
+                  url: cfg.openObserve.url,
+                  organization: cfg.openObserve.organization,
+                  streamName: cfg.openObserve.streamName,
+                  auth: {
+                    username: cfg.openObserve.username,
+                    password: cfg.openObserve.password,
+                  },
+                  batchSize: cfg.app.isProd ? 100 : 1,
+                },
               },
-              batchSize: cfg.app.isProd ? 100 : 1,
-            },
-          },
         },
       }),
     }),
@@ -86,6 +96,8 @@ import { RedisModule } from './shared/modules/redis/redis.module';
     AuthModule,
     TenantModule,
     RoleModule,
+    PermissionModule,
+    ProductModule,
 
     BullModule.forRootAsync({
       imports: [AppConfigModule],
