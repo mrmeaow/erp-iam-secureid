@@ -10,12 +10,12 @@
 - [x] Setup foundations in `nest.js` api-codebase.
 - [x] Write & wire all misc. for authentication APIs, must use JWT with `jti` (redis session).
 - [x] Scaffold `angular` web-app foundation with authentication.
-- [ ] Authorization and Tenant APIs + web-app wiring.
-- [ ] User <-> Tenant APIs & web-app wiring.
-- [ ] Sample resources e.g. product APIs & web-app wiring (scaffold version).
-- [ ] Role <-> Tenant <-> ACLs APIs & web-app wiring.
+- [x] Authorization and Tenant APIs + web-app wiring.
+- [x] User <-> Tenant APIs & web-app wiring.
+- [x] Sample resources e.g. product APIs & web-app wiring (scaffold version).
+- [x] Role <-> Tenant <-> ACLs APIs & web-app wiring.
 - [x] Audit & Logging (using `TypeORM` on PostgreSQL) APIs & web-app wiring.
-- [ ] Apply ACLs on resouces and tests (e2e).
+- [x] Apply ACLs on resouces and tests (e2e).
 - [ ] Make deployment ready using Podman `pods`
 - [ ] Record demo-video for presenting/showcase in portfolio.
 
@@ -30,7 +30,7 @@
 - [x] Created `RoleService` + `RoleModule` with `ensureDefaultRoles()` (OWNER, ADMIN per tenant).
 - [x] Fixed `app.module.ts` to use real `TenantModule` (with TypeORM entities), added `RoleModule`.
 - [x] Registered `Permission` entity in `RoleModule` (required by `Role#permissions` ManyToMany).
-- [ ] Owner can invite users (member invite flow) — **Next Iteration**.
-- [ ] Invitation accept/decline flow — **Next Iteration**.
+- [x] Owner can invite users (member invite flow) — **Next Iteration**.
+- [x] Invitation accept/decline flow — **Next Iteration**.
 - [ ] Owner/Admin can manage user groups, roles & ACLs — **Next Iteration**.
 - [ ] Teams support — **Planned for later**.

@@ -10,6 +10,7 @@ export type { ForgotPasswordDto } from './models/forgot-password-dto';
 export type { LoginDto } from './models/login-dto';
 export type { RefreshDto } from './models/refresh-dto';
 export type { RegisterDto } from './models/register-dto';
+export type { RegisterUserDto } from './models/register-user-dto';
 export type { ResetPasswordDto } from './models/reset-password-dto';
 export type { SuccessResponseDto } from './models/success-response-dto';
 export type { UserProfileDto } from './models/user-profile-dto';

@@ -1,142 +1,109 @@
-<div
-  class="min-h-screen bg-[#0d1117] text-[#f0f6fc] flex flex-col md:flex-row font-sans selection:bg-blue-500/30"
->
+<div class="flex h-screen bg-primary-100 font-sans">
   <!-- Sidebar -->
   <aside
-    class="w-full md:w-64 bg-[#161b22] border-r border-[#30363d] flex flex-col transition-all duration-300 z-50 shrink-0"
-    [class.md:w-20]="isSidebarCollapsed()"
+    class="flex flex-col bg-primary-900 text-white transition-all duration-200 ease-in-out shrink-0"
+    [class.w-64]="!isSidebarCollapsed()"
+    [class.w-16]="isSidebarCollapsed()"
   >
-    <div
-      class="h-16 flex items-center px-6 border-b border-[#30363d] backdrop-blur transition-all duration-300"
-    >
-      <span
-        class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent truncate"
-      >
-        {{ isSidebarCollapsed() ? 'S.' : 'SECURE.ID' }}
-      </span>
+    <!-- Logo -->
+    <div class="h-14 flex items-center px-4 border-b border-primary-800 shrink-0">
+      <div class="flex items-center gap-3 overflow-hidden">
+        <div class="w-8 h-8 rounded bg-brand-600 flex items-center justify-center shrink-0">
+          <span class="font-bold text-white leading-none">S</span>
+        </div>
+        <span class="font-semibold text-lg tracking-tight transition-opacity duration-200"
+              [class.opacity-0]="isSidebarCollapsed()">SECURE.ID</span>
+      </div>
     </div>
 
-    <nav class="flex-grow p-4 space-y-2 overflow-y-auto">
+    <!-- Navigation -->
+    <nav class="flex-1 py-4 px-2 space-y-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-primary-700">
       @for (item of menuItems(); track item.label) {
-        <a
-          [routerLink]="item.path"
-          routerLinkActive="bg-blue-500/10 text-blue-400 border-blue-500/50"
-          class="flex items-center px-3 py-2.5 rounded-xl border border-transparent transition-all hover:bg-white/5 group relative"
-          [title]="item.label"
-        >
-          <div class="flex items-center gap-3">
-            <i class="opacity-70 group-hover:scale-110 transition-transform">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" [innerHTML]="item.icon"></svg>
-            </i>
-            <span
-              class="text-sm font-medium transition-all duration-300"
-              [class.opacity-0]="isSidebarCollapsed()"
-              [class.hidden]="isSidebarCollapsed()"
-            >
-              {{ item.label }}
-            </span>
-          </div>
-          @if (isSidebarCollapsed()) {
-            <div
-              class="absolute left-full ml-4 px-2 py-1 bg-[#161b22] border border-[#30363d] rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity z-[100] whitespace-nowrap shadow-2xl"
-            >
-              {{ item.label }}
-            </div>
-          }
+        <a [routerLink]="item.path"
+           routerLinkActive="bg-primary-800 text-white"
+           class="flex items-center gap-3 px-3 py-2 rounded-md text-primary-300 hover:bg-primary-800 hover:text-white transition-colors group relative"
+           [title]="isSidebarCollapsed() ? item.label : ''">
+          <span class="material-symbols-outlined text-[20px] shrink-0">{{ item.icon }}</span>
+          <span class="text-sm font-medium whitespace-nowrap transition-opacity duration-200"
+                [class.opacity-0]="isSidebarCollapsed()">
+            {{ item.label }}
+          </span>
         </a>
       }
     </nav>
 
-    <div class="p-4 border-t border-[#30363d]">
-      <button
-        (click)="toggleSidebar()"
-        class="w-full flex items-center justify-center p-2 rounded-lg hover:bg-white/5 transition-colors"
-      >
-        <svg
-          class="w-5 h-5 transition-transform duration-300"
-          [class.rotate-180]="isSidebarCollapsed()"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
-          ></path>
-        </svg>
+    <!-- Sidebar footer -->
+    <div class="p-2 border-t border-primary-800">
+      <button (click)="toggleSidebar()"
+              class="w-full flex items-center justify-center p-2 rounded-md hover:bg-primary-800 text-primary-400 transition-colors">
+        <span class="material-symbols-outlined text-[20px] transition-transform duration-200"
+              [class.rotate-180]="isSidebarCollapsed()">
+          first_page
+        </span>
       </button>
     </div>
   </aside>
 
-  <!-- Main Content Container -->
-  <div class="flex-grow flex flex-col min-w-0 bg-gradient-to-br from-[#0d1117] to-[#161b22]">
-    <!-- Top Nav -->
-    <header
-      class="h-16 flex items-center justify-between px-6 border-b border-[#30363d] bg-[#161b22]/50 backdrop-blur-md sticky top-0 z-40 shrink-0"
-    >
-      <div class="flex items-center">
-        <h2 class="text-sm font-medium text-[#c9d1d9] hidden md:block">Dashboard / Overview</h2>
+  <!-- Main Area -->
+  <div class="flex flex-1 flex-col min-w-0">
+    <!-- Header -->
+    <header class="h-14 bg-white border-b border-primary-200 flex items-center justify-between px-6 shrink-0 z-10">
+      <div class="flex items-center gap-4">
+        <h1 class="text-sm font-medium text-primary-500">
+          <span class="hover:text-primary-900 cursor-pointer">ERP</span>
+          <span class="mx-2 text-primary-300">/</span>
+          <span class="text-primary-900">Dashboard</span>
+        </h1>
       </div>
 
-      <div class="flex items-center gap-4" *ngIf="user() as profile">
-        <div class="flex flex-col text-right pr-4 border-r border-[#30363d] hidden sm:flex">
-          <span class="text-sm font-semibold text-[#f0f6fc] truncate max-w-[150px]">{{
-            profile.email
-          }}</span>
-          <span class="text-[10px] text-[#8b949e] uppercase tracking-widest font-bold"
-            >Tenant: {{ profile.tenantId.substring(0, 8) }}...</span
-          >
+      @if (user(); as profile) {
+      <div class="flex items-center gap-4">
+        <!-- Tenant Switcher Placeholder/Info -->
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-primary-50 border border-primary-200 rounded text-xs font-medium text-primary-600">
+          <span class="material-symbols-outlined text-[14px]">corporate_fare</span>
+          <span class="truncate max-w-[120px]">Tenant: {{ profile.tenantId.substring(0, 8) }}</span>
         </div>
 
-        <div class="relative group">
-          <button
-            class="w-10 h-10 rounded-full border-2 border-blue-500/30 p-0.5 hover:border-blue-500 transition-all active:scale-95 shadow-lg shadow-blue-500/10"
-          >
-            <div
-              class="w-full h-full rounded-full bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center text-blue-400 font-bold"
-            >
-              {{ profile.email.charAt(0).toUpperCase() }}
-            </div>
-          </button>
+        <div class="w-px h-6 bg-primary-200 mx-1"></div>
 
-          <div
-            class="absolute right-0 mt-3 w-56 p-2 bg-[#161b22] border border-[#30363d] rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] translate-y-2 group-hover:translate-y-0"
-          >
-            <div class="px-4 py-3 border-b border-[#30363d] mb-1">
-              <p class="text-xs text-[#8b949e] font-bold uppercase tracking-wider mb-1">
-                Signed in as
-              </p>
-              <p class="text-sm font-semibold text-[#f0f6fc] truncate">{{ profile.email }}</p>
+        <!-- User Profile -->
+        <div class="flex items-center gap-3 group relative cursor-pointer py-1">
+          <div class="flex flex-col items-end text-right hidden lg:flex">
+            <span class="text-xs font-semibold text-primary-900">{{ profile.email }}</span>
+            <span class="text-[10px] text-primary-500 font-medium uppercase tracking-tighter">
+              {{ roles().join(', ') || 'User' }}
+            </span>
+          </div>
+          <div class="w-8 h-8 rounded-full bg-primary-100 border border-primary-200 flex items-center justify-center text-primary-700 text-xs font-bold ring-2 ring-transparent group-hover:ring-brand-600/10 transition-all">
+            {{ profile.email.charAt(0).toUpperCase() }}
+          </div>
+
+          <!-- Dropdown -->
+          <div class="absolute right-0 top-full mt-1 w-48 bg-white border border-primary-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-100 z-50 py-1">
+            <div class="px-4 py-2 border-b border-primary-100 mb-1 lg:hidden">
+              <p class="text-[10px] text-primary-400 font-bold uppercase tracking-wider">User</p>
+              <p class="text-xs font-semibold text-primary-900 truncate">{{ profile.email }}</p>
             </div>
-            <button
-              (click)="logout()"
-              class="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-xl transition-colors group/logout"
-            >
-              <svg
-                class="w-4 h-4 group-hover/logout:rotate-12 transition-transform"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24 font-bold border-2 p-1 rounded"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                ></path>
-              </svg>
-              <span>Sign Out</span>
+            <a routerLink="/dashboard/profile" class="flex items-center gap-2 px-4 py-2 text-xs text-primary-700 hover:bg-primary-50 transition-colors">
+              <span class="material-symbols-outlined text-[16px]">account_circle</span>
+              Profile Settings
+            </a>
+            <button (click)="logout()"
+                    class="w-full flex items-center gap-2 px-4 py-2 text-xs text-red-600 hover:bg-red-50 transition-colors">
+              <span class="material-symbols-outlined text-[16px]">logout</span>
+              Sign Out Account
             </button>
           </div>
         </div>
       </div>
+      }
     </header>
 
-    <!-- Dynamic Content -->
-    <main class="flex-grow p-4 md:p-8 overflow-auto scrollbar-hide">
-      <router-outlet></router-outlet>
+    <!-- Content Area -->
+    <main class="flex-1 overflow-auto bg-primary-50/50 relative">
+      <div class="max-w-7xl mx-auto p-6 md:p-8">
+        <router-outlet></router-outlet>
+      </div>
     </main>
   </div>
 </div>

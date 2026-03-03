@@ -1,10 +1,10 @@
 import { Hash } from '#lib/hash';
 import { AppConfigService } from '#shared/modules/app-config/app-config.service';
 import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  UnauthorizedException,
+    BadRequestException,
+    ConflictException,
+    Injectable,
+    UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomBytes } from 'crypto';
@@ -74,15 +74,17 @@ export class AuthService {
       );
 
       await this.auditLogService.log({
-        event: 'user.registered_with_tenant',
-        user_id: user.user_id,
+        action: 'user.registered_with_tenant',
+        actor_id: user.user_id,
+        actor_email: user.email,
         tenant_id: tenant_id,
         payload: { email: user.email, company: registerDto.companyName },
       });
     } else {
       await this.auditLogService.log({
-        event: 'user.registered',
-        user_id: user.user_id,
+        action: 'user.registered',
+        actor_id: user.user_id,
+        actor_email: user.email,
         payload: { email: user.email },
       });
     }
@@ -122,8 +124,9 @@ export class AuthService {
     });
 
     await this.auditLogService.log({
-      event: 'user.registered_only',
-      user_id: user.user_id,
+      action: 'user.registered_only',
+      actor_id: user.user_id,
+      actor_email: user.email,
       payload: { email: user.email },
     });
 
@@ -153,8 +156,9 @@ export class AuthService {
     await this.userService.updateLastLogin(user.user_id);
 
     await this.auditLogService.log({
-      event: 'user.login',
-      user_id: user.user_id,
+      action: 'user.login',
+      actor_id: user.user_id,
+      actor_email: user.email,
     });
 
     return this.sessionService.createSession(user);
@@ -196,6 +200,34 @@ export class AuthService {
     await this.sessionService.revokeSession(userId, jti);
   }
 
+  async switchTenant(userId: string, jti: string, tenantId: string) {
+    const hasMembership = await this.tenantService.hasActiveMembership(
+      tenantId,
+      userId,
+    );
+    if (!hasMembership) {
+      throw new UnauthorizedException('No active membership for target tenant');
+    }
+
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    await this.sessionService.revokeSession(userId, jti);
+    const tokens = await this.sessionService.createSession(user, tenantId);
+
+    await this.auditLogService.log({
+      action: 'user.tenant_switched',
+      actor_id: user.user_id,
+      actor_email: user.email,
+      tenant_id: tenantId,
+      payload: { from_session: jti },
+    });
+
+    return tokens;
+  }
+
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
     const user = await this.userService.findByEmail(forgotPasswordDto.email);
     if (user) {
@@ -214,8 +246,9 @@ export class AuthService {
       });
 
       await this.auditLogService.log({
-        event: 'user.forgot_password_requested',
-        user_id: user.user_id,
+        action: 'user.forgot_password_requested',
+        actor_id: user.user_id,
+        actor_email: user.email,
       });
     }
     return {
@@ -241,8 +274,9 @@ export class AuthService {
     });
 
     await this.auditLogService.log({
-      event: 'user.password_reset_success',
-      user_id: user.user_id,
+      action: 'user.password_reset_success',
+      actor_id: user.user_id,
+      actor_email: user.email,
     });
 
     return { success: true };
@@ -266,8 +300,9 @@ export class AuthService {
     await this.userService.updatePassword(userId, hashedPassword);
 
     await this.auditLogService.log({
-      event: 'user.password_changed',
-      user_id: userId,
+      action: 'user.password_changed',
+      actor_id: userId,
+      actor_email: user.email,
     });
 
     return { success: true };
@@ -287,8 +322,9 @@ export class AuthService {
     });
 
     await this.auditLogService.log({
-      event: 'user.email_verified',
-      user_id: user.user_id,
+      action: 'user.email_verified',
+      actor_id: user.user_id,
+      actor_email: user.email,
     });
 
     return { success: true };

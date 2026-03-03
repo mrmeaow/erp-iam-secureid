@@ -1,0 +1,37 @@
+<div class="max-w-3xl space-y-6">
+  <div>
+    <h2 class="text-2xl font-bold text-primary-900">Profile</h2>
+    <p class="text-sm text-primary-600">Your authenticated account context and tenant scope.</p>
+  </div>
+
+  @if (user(); as profile) {
+    <section class="bg-white border border-primary-200 rounded-xl p-6 space-y-4 shadow-sm">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-primary-500">Email</p>
+          <p class="text-sm text-primary-900">{{ profile.email }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-primary-500">User ID</p>
+          <p class="text-sm text-primary-900 break-all">{{ profile.sub }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-primary-500">Tenant</p>
+          <p class="text-sm text-primary-900 break-all">{{ profile.tenantId || 'No active tenant' }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-primary-500">Verification</p>
+          <p class="text-sm" [class.text-emerald-700]="profile.isVerified" [class.text-amber-700]="!profile.isVerified">
+            {{ profile.isVerified ? 'Verified' : 'Pending verification' }}
+          </p>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <a routerLink="/dashboard/settings" class="btn-primary">Change Password</a>
+      </div>
+    </section>
+  } @else {
+    <p class="text-sm text-primary-600">No profile loaded.</p>
+  }
+</div>

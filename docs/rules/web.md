@@ -8,6 +8,8 @@
 - Use latest `tailwindcss` v4 for styling and UI components.
 - Must follow our `pnpm-workspace` structure and rules as per monorepo.
 - Must sync with auto-generated API SDKs using our backend `openapi.json`.
+- Must follow latest modern angular APIs e.g. `@if`, `@for`, `@switch`, etc. instead of `*ngIf`, `*ngFor`, `*ngSwitch`, etc.
+
 - Mulitple layouts support e.g. `dashboard`, `auth-pages`, in generel public landing page or pages etc. and must be able to switch between them easily.
 - Must use client-side level routing and guards for route protection.
 - Must use form-validations with prorper error messages.

@@ -97,4 +97,15 @@ export class TenantService {
       user_id: userId,
     });
   }
+
+  async hasActiveMembership(tenantId: string, userId: string): Promise<boolean> {
+    const membership = await this.membershipRepository.findOne({
+      where: {
+        tenant_id: tenantId,
+        user_id: userId,
+        is_active: true,
+      },
+    });
+    return !!membership;
+  }
 }

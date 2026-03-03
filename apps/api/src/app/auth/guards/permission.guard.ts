@@ -11,6 +11,7 @@ import { Repository } from 'typeorm';
 import { AuditLogService } from '../../audit-log/audit-log.service';
 import { Membership } from '../../tenant/entities/membership.entity';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
+import { AuthGuard } from './auth.guard';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -19,6 +20,7 @@ export class PermissionGuard implements CanActivate {
     @InjectRepository(Membership)
     private readonly membershipRepository: Repository<Membership>,
     private readonly auditLogService: AuditLogService,
+    private readonly authGuard: AuthGuard,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -32,6 +34,11 @@ export class PermissionGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
+
+    // When used globally, this guard may run before route-level AuthGuard.
+    if (!request['user']) {
+      await this.authGuard.canActivate(context);
+    }
     const user = request['user'] as JwtPayload;
 
     if (!user || !user.tenantId) {
@@ -88,14 +95,15 @@ export class PermissionGuard implements CanActivate {
 
     // Log the authorization event
     await this.auditLogService.log({
-      event: hasPermission ? 'AUTHORIZATION_SUCCESS' : 'AUTHORIZATION_FAILURE',
-      user_id: user.sub,
+      action: hasPermission ? 'AUTHORIZATION_SUCCESS' : 'AUTHORIZATION_FAILURE',
+      actor_id: user.sub,
+      actor_email: user.email,
       tenant_id: user.tenantId,
+      resource_type: context.getClass().name,
+      resource_id: context.getHandler().name,
       payload: {
         required: requiredPermissions,
         hasPermission,
-        resource: context.getClass().name,
-        handler: context.getHandler().name,
       },
     });
 

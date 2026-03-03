@@ -12,24 +12,36 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { FastifyRequest } from 'fastify';
+import { AuditLogService } from '../audit-log/audit-log.service';
 import { Permissions } from '../auth/decorators/permissions.decorator';
 import { AuthGuard } from '../auth/guards/auth.guard';
-import { PermissionGuard } from '../auth/guards/permission.guard';
 import { ProductService } from './product.service';
 
 @ApiTags('Products')
 @ApiBearerAuth()
-@UseGuards(AuthGuard, PermissionGuard)
+@UseGuards(AuthGuard)
 @Controller({ path: 'products', version: '1' })
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(
+    private readonly productService: ProductService,
+    private readonly auditLogService: AuditLogService,
+  ) {}
 
   @ApiOperation({ summary: 'List all products in current tenant' })
   @Permissions('PRODUCTS:READ')
   @Get()
   async findAll(@Req() req: FastifyRequest) {
     const user = req['user'] as JwtPayload;
-    return this.productService.findAll(user.tenantId!);
+    const data = await this.productService.findAll(user.tenantId!);
+    await this.auditLogService.log({
+      action: 'product.read_many',
+      actor_id: user.sub,
+      actor_email: user.email,
+      tenant_id: user.tenantId,
+      resource_type: 'Product',
+      payload: { count: data.length },
+    });
+    return data;
   }
 
   @ApiOperation({ summary: 'Get a product by ID' })
@@ -37,7 +49,16 @@ export class ProductController {
   @Get(':id')
   async findOne(@Param('id') id: string, @Req() req: FastifyRequest) {
     const user = req['user'] as JwtPayload;
-    return this.productService.findOne(id, user.tenantId!);
+    const data = await this.productService.findOne(id, user.tenantId!);
+    await this.auditLogService.log({
+      action: 'product.read_one',
+      actor_id: user.sub,
+      actor_email: user.email,
+      tenant_id: user.tenantId,
+      resource_type: 'Product',
+      resource_id: id,
+    });
+    return data;
   }
 
   @ApiOperation({ summary: 'Create a new product' })
@@ -45,7 +66,17 @@ export class ProductController {
   @Post()
   async create(@Body() body: any, @Req() req: FastifyRequest) {
     const user = req['user'] as JwtPayload;
-    return this.productService.create(user.tenantId!, user.sub, body);
+    const data = await this.productService.create(user.tenantId!, user.sub, body);
+    await this.auditLogService.log({
+      action: 'product.created',
+      actor_id: user.sub,
+      actor_email: user.email,
+      tenant_id: user.tenantId,
+      resource_type: 'Product',
+      resource_id: data.product_id,
+      payload: { name: data.name },
+    });
+    return data;
   }
 
   @ApiOperation({ summary: 'Update an existing product' })
@@ -57,7 +88,17 @@ export class ProductController {
     @Req() req: FastifyRequest,
   ) {
     const user = req['user'] as JwtPayload;
-    return this.productService.update(id, user.tenantId!, body);
+    const data = await this.productService.update(id, user.tenantId!, body);
+    await this.auditLogService.log({
+      action: 'product.updated',
+      actor_id: user.sub,
+      actor_email: user.email,
+      tenant_id: user.tenantId,
+      resource_type: 'Product',
+      resource_id: id,
+      payload: { keys: Object.keys(body || {}) },
+    });
+    return data;
   }
 
   @ApiOperation({ summary: 'Delete a product' })
@@ -65,6 +106,15 @@ export class ProductController {
   @Delete(':id')
   async remove(@Param('id') id: string, @Req() req: FastifyRequest) {
     const user = req['user'] as JwtPayload;
-    return this.productService.remove(id, user.tenantId!);
+    await this.productService.remove(id, user.tenantId!);
+    await this.auditLogService.log({
+      action: 'product.deleted',
+      actor_id: user.sub,
+      actor_email: user.email,
+      tenant_id: user.tenantId,
+      resource_type: 'Product',
+      resource_id: id,
+    });
+    return { success: true };
   }
 }

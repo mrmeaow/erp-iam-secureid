@@ -25,6 +25,7 @@ describe('RBAC Enforcement (e2e)', () => {
   let memberToken: string;
   let adminRoleId: string;
   let memberInviteToken: string;
+  let protectedProductId: string;
 
   const ownerData = { email: 'owner-rbac@test.local', password: 'password123', name: 'Owner', companyName: 'RBAC Corp' };
   const memberData = { email: 'member-rbac@test.local', password: 'password123', name: 'Member' };
@@ -111,6 +112,17 @@ describe('RBAC Enforcement (e2e)', () => {
       .expect(201);
   });
 
+  it('Owner: creates a protected product before role revocation', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/v1/products')
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({ name: 'Protected Product', price: 80 })
+      .expect(201);
+
+    protectedProductId = res.body.data.product_id;
+    expect(protectedProductId).toBeDefined();
+  });
+
   it('Owner: revoke ALL permissions from ADMIN role', async () => {
     await request(app.getHttpServer())
       .post(`/v1/roles/${adminRoleId}/permissions`)
@@ -131,6 +143,13 @@ describe('RBAC Enforcement (e2e)', () => {
       .post('/v1/products')
       .set('Authorization', `Bearer ${memberToken}`)
       .send({ name: 'Sneaky Product', price: 1 })
+      .expect(403);
+  });
+
+  it("Member without ADMIN role: cannot delete product within same tenant (403)", async () => {
+    await request(app.getHttpServer())
+      .delete(`/v1/products/${protectedProductId}`)
+      .set('Authorization', `Bearer ${memberToken}`)
       .expect(403);
   });
 });

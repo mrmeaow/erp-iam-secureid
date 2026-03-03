@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigService } from '../../shared/modules/app-config/app-config.service';
@@ -18,7 +18,7 @@ import { SessionService } from './services/session.service';
     UserModule,
     TenantModule,
     RoleModule,
-    AuditLogModule,
+    forwardRef(() => AuditLogModule),
     TypeOrmModule.forFeature([Membership]),
 
     JwtModule.registerAsync({

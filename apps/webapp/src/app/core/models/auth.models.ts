@@ -15,10 +15,18 @@ export interface AuthTokens {
   refreshToken: string;
 }
 
+export interface PermissionInfo {
+  resource: string;
+  action: string;
+  condition?: any;
+}
+
 export interface JwtPayload {
   sub: string;
   email: string;
   tenantId: string;
+  roles: string[];
+  permissions: PermissionInfo[];
   jti: string;
   isVerified: boolean;
   iat: number;
@@ -30,4 +38,6 @@ export interface UserProfile {
   email: string;
   tenantId: string;
   isVerified: boolean;
+  roles: string[];
+  permissions: PermissionInfo[];
 }

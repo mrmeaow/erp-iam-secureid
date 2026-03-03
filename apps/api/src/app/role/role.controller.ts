@@ -1,6 +1,6 @@
 import { JwtPayload } from '#config/types/auth.types';
 import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { FastifyRequest } from 'fastify';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RoleService } from './role.service';
@@ -13,6 +13,7 @@ export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
   @ApiOperation({ summary: 'List all roles for the current tenant' })
+  @ApiResponse({ status: 200, description: 'List of roles' })
   @Get()
   async getRoles(@Req() req: FastifyRequest) {
     const user = req['user'] as JwtPayload;

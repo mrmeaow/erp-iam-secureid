@@ -10,14 +10,25 @@ export class AuditLog {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  event: string;
+  // Keep nullable for backward compatibility with pre-migration rows.
+  // New writes should always set this field.
+  @Column({ nullable: true })
+  action: string;
 
-  @Column({ name: 'user_id', nullable: true })
-  user_id: string;
+  @Column({ name: 'actor_id', nullable: true })
+  actor_id: string;
+
+  @Column({ name: 'actor_email', nullable: true })
+  actor_email: string;
 
   @Column({ name: 'tenant_id', nullable: true })
   tenant_id: string;
+
+  @Column({ name: 'resource_type', nullable: true })
+  resource_type: string;
+
+  @Column({ name: 'resource_id', nullable: true })
+  resource_id: string;
 
   @Column({ type: 'jsonb', nullable: true })
   payload: any;
