@@ -23,6 +23,12 @@ export class UserProfileDto {
   @ApiProperty({ description: 'The unique session ID' })
   jti: string;
 
+  @ApiProperty({ description: 'User roles' })
+  roles: string[];
+
+  @ApiProperty({ description: 'User permissions' })
+  permissions: any[];
+
   @ApiProperty({ description: 'Whether the user email is verified' })
   isVerified: boolean;
 }

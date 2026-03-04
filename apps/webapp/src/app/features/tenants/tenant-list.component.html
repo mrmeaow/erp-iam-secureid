@@ -3,9 +3,11 @@
   <div class="flex items-center justify-between border-b border-primary-200 pb-5">
     <div>
       <h2 class="text-2xl font-bold text-primary-900 tracking-tight">Tenants</h2>
-      <p class="mt-1 text-sm text-primary-500">Manage your business accounts and isolated environments.</p>
+      <p class="mt-1 text-sm text-primary-500">
+        Manage your business accounts and isolated environments.
+      </p>
     </div>
-    
+
     <button
       *hasPermission="'TENANTS:WRITE'"
       class="btn-primary gap-2"
@@ -43,36 +45,50 @@
   <!-- Grid Container -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     @for (tenant of tenants(); track tenant.tenant_id) {
-      <div class="bg-white border border-primary-200 rounded-lg shadow-sm hover:border-brand-600/50 transition-all group flex flex-col p-6">
+      <div
+        class="bg-white border border-primary-200 rounded-lg shadow-sm hover:border-brand-600/50 transition-all group flex flex-col p-6"
+      >
         <div class="flex items-start justify-between mb-4">
-          <div class="w-12 h-12 rounded bg-primary-100 flex items-center justify-center text-primary-600 group-hover:bg-brand-50 group-hover:text-brand-600 transition-colors">
+          <div
+            class="w-12 h-12 rounded bg-primary-100 flex items-center justify-center text-primary-600 group-hover:bg-brand-50 group-hover:text-brand-600 transition-colors"
+          >
             <span class="material-symbols-outlined text-2xl">corporate_fare</span>
           </div>
-          <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-primary-100 text-primary-600 border border-primary-200">
+          <span
+            class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-primary-100 text-primary-600 border border-primary-200"
+          >
             Active
           </span>
         </div>
 
-        <h3 class="text-base font-bold text-primary-900 mb-1">{{ tenant.tenant?.name || tenant.name }}</h3>
-        <p class="text-xs text-primary-500 font-mono mb-4 break-all">{{ tenant.tenant_id || tenant.tenant?.tenant_id }}</p>
+        <h3 class="text-base font-bold text-primary-900 mb-1">
+          {{ tenant.tenant?.name || 'N/A' }}
+        </h3>
+        <p class="text-xs text-primary-500 font-mono mb-4 break-all">{{ tenant.tenant_id }}</p>
 
         <div class="mt-auto pt-4 border-t border-primary-50 flex items-center justify-between">
           <div class="flex flex-col">
-            <span class="text-[10px] text-primary-400 font-bold uppercase tracking-tighter">Owner</span>
-            <span class="text-xs text-primary-700 font-medium">{{ tenant.user_id?.substring(0, 12) || 'N/A' }}...</span>
+            <span class="text-[10px] text-primary-400 font-bold uppercase tracking-tighter"
+              >Owner ID</span
+            >
+            <span class="text-xs text-primary-700 font-medium"
+              >{{ tenant.user_id.substring(0, 12) }}...</span
+            >
           </div>
-          
+
           <button
             class="btn-secondary py-1.5 px-3 text-xs"
-            [disabled]="activeTenantId() === (tenant.tenant_id || tenant.tenant?.tenant_id)"
-            (click)="switchTenant(tenant.tenant_id || tenant.tenant?.tenant_id)"
+            [disabled]="activeTenantId() === tenant.tenant_id"
+            (click)="switchTenant(tenant.tenant_id)"
           >
-            {{ activeTenantId() === (tenant.tenant_id || tenant.tenant?.tenant_id) ? 'Active' : 'Switch' }}
+            {{ activeTenantId() === tenant.tenant_id ? 'Active' : 'Switch' }}
           </button>
         </div>
       </div>
     } @empty {
-      <div class="col-span-full py-12 text-center text-primary-400 bg-white border border-dashed border-primary-300 rounded-lg">
+      <div
+        class="col-span-full py-12 text-center text-primary-400 bg-white border border-dashed border-primary-300 rounded-lg"
+      >
         <div class="flex flex-col items-center gap-2">
           <span class="material-symbols-outlined text-4xl">domain_disabled</span>
           <p>No tenants found.</p>
@@ -85,10 +101,16 @@
     <h3 class="text-sm font-semibold text-primary-900">Tenant Members</h3>
     <div class="space-y-2">
       @for (member of members(); track member.membership_id) {
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 rounded border border-primary-200 p-3">
+        <div
+          class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 rounded border border-primary-200 p-3"
+        >
           <div>
-            <div class="text-sm font-medium text-primary-900">{{ member.user?.email || member.user_id }}</div>
-            <div class="text-xs text-primary-500">Role: {{ member.role?.name || member.role_id }}</div>
+            <div class="text-sm font-medium text-primary-900">
+              {{ member.user?.email || member.user_id }}
+            </div>
+            <div class="text-xs text-primary-500">
+              Role: {{ member.role?.name || member.role_id }}
+            </div>
           </div>
           <div class="flex items-center gap-2">
             <select

@@ -9,7 +9,13 @@ import {
   ResetPasswordDto as ApiResetPasswordDto,
   VerifyEmailDto as ApiVerifyEmailDto,
 } from '../api/models';
-import { AuthTokens, LoginDto, RegisterDto, UserProfile } from '../models/auth.models';
+import {
+  AuthTokens,
+  LoginDto,
+  PermissionInfo,
+  RegisterDto,
+  UserProfile,
+} from '../models/auth.models';
 
 @Injectable({
   providedIn: 'root',
@@ -65,6 +71,7 @@ export class AuthService {
 
     const tokens = response.data as AuthTokens;
     this.setSession(tokens);
+    await this.getMe();
     return tokens;
   }
 
@@ -79,6 +86,7 @@ export class AuthService {
 
     const tokens = response.data as AuthTokens;
     this.setSession(tokens);
+    await this.getMe();
     return tokens;
   }
 
@@ -113,10 +121,17 @@ export class AuthService {
       tenantId: data.tenantId,
       isVerified: data.isVerified,
       roles: data.roles || [],
-      permissions: data.permissions || []
+      permissions: this.parsePermissions(data.permissions || []),
     };
     this.currentUser.set(profile);
     return profile;
+  }
+
+  private parsePermissions(permissions: string[]): PermissionInfo[] {
+    return permissions.map((p) => {
+      const [resource, action] = p.split(':');
+      return { resource, action };
+    });
   }
 
   private setSession(tokens: AuthTokens) {
@@ -138,7 +153,7 @@ export class AuthService {
         tenantId: payload.tenantId,
         isVerified: payload.isVerified,
         roles: payload.roles || [],
-        permissions: payload.permissions || []
+        permissions: this.parsePermissions(payload.permissions || []),
       };
     } catch (e) {
       console.error('Failed to decode token', e);

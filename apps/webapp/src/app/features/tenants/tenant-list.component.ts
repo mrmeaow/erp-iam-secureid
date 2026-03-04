@@ -1,11 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
 import { Api } from '../../core/api/api';
-import * as TenantApi from '../../core/api/functions';
-import * as RoleApi from '../../core/api/functions';
-import * as InvitationApi from '../../core/api/functions';
+import * as ApiFns from '../../core/api/functions';
+import { RoleDto, TenantMembershipDto } from '../../core/api/models';
 import { ApiResponseDto } from '../../core/api/models/api-response-dto';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { AuthService } from '../../core/services/auth.service';
@@ -19,13 +16,12 @@ import { LoadingService } from '../../core/services/loading.service';
 })
 export class TenantListComponent implements OnInit {
   private readonly api = inject(Api);
-  private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
   private readonly loading = inject(LoadingService);
 
-  tenants = signal<any[]>([]);
-  members = signal<any[]>([]);
-  roles = signal<any[]>([]);
+  tenants = signal<TenantMembershipDto[]>([]);
+  members = signal<TenantMembershipDto[]>([]);
+  roles = signal<RoleDto[]>([]);
   inviteEmail = signal<string>('');
   inviteRoleId = signal<string>('');
   activeTenantId = signal<string>('');
@@ -38,9 +34,12 @@ export class TenantListComponent implements OnInit {
   async loadTenants() {
     this.loading.show();
     try {
-      const response = await this.api.invoke(TenantApi.tenantControllerGetMyTenantsV1, {}) as unknown as ApiResponseDto;
-      if (response.success) {
-        this.tenants.set(response.data as any[]);
+      const response = (await this.api.invoke(
+        ApiFns.tenantControllerGetMyTenantsV1,
+        {},
+      )) as unknown as ApiResponseDto;
+      if (response.success && response.data) {
+        this.tenants.set(response.data as unknown as TenantMembershipDto[]);
         const current = this.authService.currentUser()?.tenantId;
         if (current) {
           this.activeTenantId.set(current);
@@ -54,9 +53,12 @@ export class TenantListComponent implements OnInit {
   async loadRoles() {
     this.loading.show();
     try {
-      const response = await this.api.invoke(RoleApi.roleControllerGetRolesV1, {}) as unknown as ApiResponseDto;
-      if (response.success) {
-        const data = response.data as any[];
+      const response = (await this.api.invoke(
+        ApiFns.roleControllerGetRolesV1,
+        {},
+      )) as unknown as ApiResponseDto;
+      if (response.success && response.data) {
+        const data = response.data as unknown as RoleDto[];
         this.roles.set(data);
         if (!this.inviteRoleId() && data.length) {
           this.inviteRoleId.set(data[0].role_id);
@@ -70,9 +72,12 @@ export class TenantListComponent implements OnInit {
   async loadMembers() {
     this.loading.show();
     try {
-      const response = await this.api.invoke(TenantApi.tenantControllerGetMembersV1, {}) as unknown as ApiResponseDto;
-      if (response.success) {
-        this.members.set(response.data as any[]);
+      const response = (await this.api.invoke(
+        ApiFns.tenantControllerGetMembersV1,
+        {},
+      )) as unknown as ApiResponseDto;
+      if (response.success && response.data) {
+        this.members.set(response.data as unknown as TenantMembershipDto[]);
       }
     } finally {
       this.loading.hide();
@@ -94,7 +99,7 @@ export class TenantListComponent implements OnInit {
 
     this.loading.show();
     try {
-      await this.api.invoke(InvitationApi.invitationControllerSendInviteV1, {
+      await this.api.invoke(ApiFns.invitationControllerSendInviteV1, {
         body: { email, role_id },
       });
       this.inviteEmail.set('');
@@ -107,8 +112,10 @@ export class TenantListComponent implements OnInit {
   async switchTenant(tenantId: string) {
     this.loading.show();
     try {
-      const url = `${this.api.rootUrl}/v1/tenants/${tenantId}/switch`;
-      const response = await firstValueFrom(this.http.post<ApiResponseDto>(url, {}));
+      const response = (await this.api.invoke(ApiFns.tenantControllerSwitchTenantV1, {
+        tenantId,
+      })) as unknown as ApiResponseDto;
+
       const data: any = response?.data;
       if (response?.success && data?.accessToken && data?.refreshToken) {
         localStorage.setItem('auth_token', data.accessToken);
@@ -125,7 +132,7 @@ export class TenantListComponent implements OnInit {
   async removeMember(userId: string) {
     this.loading.show();
     try {
-      await this.api.invoke(TenantApi.tenantControllerRemoveMemberV1, { userId });
+      await this.api.invoke(ApiFns.tenantControllerRemoveMemberV1, { userId });
       await this.loadMembers();
     } finally {
       this.loading.hide();
@@ -136,11 +143,9 @@ export class TenantListComponent implements OnInit {
     if (!roleId) return;
     this.loading.show();
     try {
-      const url = `${this.api.rootUrl}/v1/tenants/members`;
-      await firstValueFrom(this.http.post<ApiResponseDto>(url, {
-        user_id: userId,
-        role_id: roleId,
-      }));
+      await this.api.invoke(ApiFns.tenantControllerAddMemberV1, {
+        body: { user_id: userId, role_id: roleId },
+      });
       await this.loadMembers();
     } finally {
       this.loading.hide();

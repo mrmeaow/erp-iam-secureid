@@ -7,21 +7,30 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
+import { ApiResponseDto } from '../../models/api-response-dto';
+import { InvitationDto } from '../../models/invitation-dto';
+import { SendInviteDto } from '../../models/send-invite-dto';
 
 export interface InvitationControllerSendInviteV1$Params {
+      body: SendInviteDto
 }
 
-export function invitationControllerSendInviteV1(http: HttpClient, rootUrl: string, params?: InvitationControllerSendInviteV1$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+export function invitationControllerSendInviteV1(http: HttpClient, rootUrl: string, params: InvitationControllerSendInviteV1$Params, context?: HttpContext): Observable<StrictHttpResponse<ApiResponseDto & {
+'data'?: InvitationDto;
+}>> {
   const rb = new RequestBuilder(rootUrl, invitationControllerSendInviteV1.PATH, 'post');
   if (params) {
+    rb.body(params.body, 'application/json');
   }
 
   return http.request(
-    rb.build({ responseType: 'text', accept: '*/*', context })
+    rb.build({ responseType: 'json', accept: 'application/json', context })
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
+      return r as StrictHttpResponse<ApiResponseDto & {
+      'data'?: InvitationDto;
+      }>;
     })
   );
 }

@@ -7,21 +7,27 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
+import { ApiResponseDto } from '../../models/api-response-dto';
+import { ProductDto } from '../../models/product-dto';
 
 export interface ProductControllerFindAllV1$Params {
 }
 
-export function productControllerFindAllV1(http: HttpClient, rootUrl: string, params?: ProductControllerFindAllV1$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+export function productControllerFindAllV1(http: HttpClient, rootUrl: string, params?: ProductControllerFindAllV1$Params, context?: HttpContext): Observable<StrictHttpResponse<ApiResponseDto & {
+'data'?: Array<ProductDto>;
+}>> {
   const rb = new RequestBuilder(rootUrl, productControllerFindAllV1.PATH, 'get');
   if (params) {
   }
 
   return http.request(
-    rb.build({ responseType: 'text', accept: '*/*', context })
+    rb.build({ responseType: 'json', accept: 'application/json', context })
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
+      return r as StrictHttpResponse<ApiResponseDto & {
+      'data'?: Array<ProductDto>;
+      }>;
     })
   );
 }

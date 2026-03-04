@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-    Column,
-    CreateDateColumn,
-    Entity,
-    JoinColumn,
-    ManyToOne,
-    PrimaryGeneratedColumn,
-    UpdateDateColumn,
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Tenant } from '../../tenant/entities/tenant.entity';
 
@@ -31,6 +31,10 @@ export class Product {
   @ApiProperty()
   @Column({ type: 'varchar', length: 255 })
   name: string;
+
+  @ApiProperty()
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  sku?: string;
 
   @ApiProperty()
   @Column({ type: 'text', nullable: true })

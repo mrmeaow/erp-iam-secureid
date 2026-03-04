@@ -19,6 +19,16 @@ export interface UserProfileDto {
   jti: string;
 
   /**
+   * User permissions
+   */
+  permissions: Array<string>;
+
+  /**
+   * User roles
+   */
+  roles: Array<string>;
+
+  /**
    * The user ID
    */
   sub: string;

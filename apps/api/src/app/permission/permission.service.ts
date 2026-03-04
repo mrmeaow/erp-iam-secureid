@@ -15,7 +15,9 @@ export class PermissionService implements OnModuleInit {
   }
 
   async findAll(): Promise<Permission[]> {
-    return this.permissionRepository.find({ order: { group: 'ASC', label: 'ASC' } });
+    return this.permissionRepository.find({
+      order: { group: 'ASC', label: 'ASC' },
+    });
   }
 
   async findByResourceAndAction(
@@ -71,9 +73,19 @@ export class PermissionService implements OnModuleInit {
         group: 'Production',
       },
       { resource: 'USERS', action: 'READ', label: 'View Users', group: 'IAM' },
-      { resource: 'USERS', action: 'WRITE', label: 'Manage Users', group: 'IAM' },
+      {
+        resource: 'USERS',
+        action: 'WRITE',
+        label: 'Manage Users',
+        group: 'IAM',
+      },
       { resource: 'ROLES', action: 'READ', label: 'View Roles', group: 'IAM' },
-      { resource: 'ROLES', action: 'WRITE', label: 'Manage Roles', group: 'IAM' },
+      {
+        resource: 'ROLES',
+        action: 'WRITE',
+        label: 'Manage Roles',
+        group: 'IAM',
+      },
       {
         resource: 'TENANTS',
         action: 'READ',
@@ -86,6 +98,12 @@ export class PermissionService implements OnModuleInit {
         label: 'Manage Org',
         group: 'Admin',
       },
+      {
+        resource: 'AUDIT',
+        action: 'READ',
+        label: 'View Audit Logs',
+        group: 'Admin',
+      },
     ];
 
     for (const d of defaults) {
@@ -94,4 +112,3 @@ export class PermissionService implements OnModuleInit {
     }
   }
 }
-

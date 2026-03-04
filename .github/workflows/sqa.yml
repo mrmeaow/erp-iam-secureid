@@ -1,0 +1,64 @@
+name: SQA Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  validate:
+    name: Lint, Build, and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22" # Matching .node-version
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10 # Matching package.json
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (Parallel)
+        run: pnpm lint
+
+      - name: Build (Parallel)
+        run: pnpm build
+
+      - name: Install Playwright Browsers
+        run: pnpm --filter sqa exec playwright install --with-deps chromium
+
+      - name: Start Services (API & Webapp)
+        run: |
+          # Note: In a real CI, you might need a more robust background process or mock the backend
+          # For now, we attempt to start them in the background
+          pnpm dev &
+          # Give them some time to start
+          sleep 30
+
+      - name: Run SQA Tests (Cross-App E2E)
+        run: pnpm sqa test
+        env:
+          BASE_URL: http://localhost:4200

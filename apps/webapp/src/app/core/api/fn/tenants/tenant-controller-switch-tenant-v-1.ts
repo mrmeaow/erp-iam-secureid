@@ -7,23 +7,29 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
+import { ApiResponseDto } from '../../models/api-response-dto';
+import { SuccessResponseDto } from '../../models/success-response-dto';
 
 export interface TenantControllerSwitchTenantV1$Params {
   tenantId: string;
 }
 
-export function tenantControllerSwitchTenantV1(http: HttpClient, rootUrl: string, params: TenantControllerSwitchTenantV1$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+export function tenantControllerSwitchTenantV1(http: HttpClient, rootUrl: string, params: TenantControllerSwitchTenantV1$Params, context?: HttpContext): Observable<StrictHttpResponse<ApiResponseDto & {
+'data'?: SuccessResponseDto;
+}>> {
   const rb = new RequestBuilder(rootUrl, tenantControllerSwitchTenantV1.PATH, 'post');
   if (params) {
     rb.path('tenantId', params.tenantId, {});
   }
 
   return http.request(
-    rb.build({ responseType: 'text', accept: '*/*', context })
+    rb.build({ responseType: 'json', accept: 'application/json', context })
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
+      return r as StrictHttpResponse<ApiResponseDto & {
+      'data'?: SuccessResponseDto;
+      }>;
     })
   );
 }

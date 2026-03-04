@@ -1,10 +1,10 @@
 import { Hash } from '#lib/hash';
 import { AppConfigService } from '#shared/modules/app-config/app-config.service';
 import {
-    BadRequestException,
-    ConflictException,
-    Injectable,
-    UnauthorizedException,
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomBytes } from 'crypto';
@@ -226,6 +226,47 @@ export class AuthService {
     });
 
     return tokens;
+  }
+
+  async getProfile(userId: string, tenantId?: string) {
+    const user = await this.userService.findById(userId);
+    if (!user) throw new UnauthorizedException('User not found');
+
+    let roles: string[] = [];
+    let permissions: string[] = [];
+
+    if (tenantId) {
+      const membership = await this.tenantService.membershipRepository.findOne({
+        where: { user_id: userId, tenant_id: tenantId, is_active: true },
+        relations: ['role', 'role.permissions'],
+      });
+
+      if (membership) {
+        if (membership.role) {
+          roles.push(membership.role.name);
+          permissions = (membership.role.permissions || []).map(
+            (p) => `${p.resource}:${p.action}`,
+          );
+        }
+
+        // Add custom overrides if any
+        if (membership.permissions) {
+          // Logic for overrides can be complex, for now we merge or replace?
+          // Usually custom ones take precedence or are additive.
+          // Let's assume they are additive for now.
+        }
+      }
+    }
+
+    return {
+      sub: user.user_id,
+      email: user.email,
+      tenantId: tenantId,
+      isVerified: user.is_verified,
+      roles,
+      permissions,
+      jti: '', // Optional in DTO or filled by controller if needed
+    };
   }
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {

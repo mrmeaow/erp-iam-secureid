@@ -10,7 +10,7 @@ export class TenantService {
     @InjectRepository(Tenant)
     private readonly tenantRepository: Repository<Tenant>,
     @InjectRepository(Membership)
-    private readonly membershipRepository: Repository<Membership>,
+    public readonly membershipRepository: Repository<Membership>,
   ) {}
 
   async create(name: string): Promise<Tenant> {
@@ -98,7 +98,10 @@ export class TenantService {
     });
   }
 
-  async hasActiveMembership(tenantId: string, userId: string): Promise<boolean> {
+  async hasActiveMembership(
+    tenantId: string,
+    userId: string,
+  ): Promise<boolean> {
     const membership = await this.membershipRepository.findOne({
       where: {
         tenant_id: tenantId,

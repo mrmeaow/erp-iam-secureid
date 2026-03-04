@@ -6,6 +6,7 @@ export const ApiSuccessResponse = <TModel extends Type<any>>(
   model: TModel,
   statusCode = 200,
   description = 'OK',
+  isArray = false,
 ) => {
   return applyDecorators(
     ApiExtraModels(ApiResponseDto, model),
@@ -17,9 +18,14 @@ export const ApiSuccessResponse = <TModel extends Type<any>>(
           { $ref: getSchemaPath(ApiResponseDto) },
           {
             properties: {
-              data: {
-                $ref: getSchemaPath(model),
-              },
+              data: isArray
+                ? {
+                    type: 'array',
+                    items: { $ref: getSchemaPath(model) },
+                  }
+                : {
+                    $ref: getSchemaPath(model),
+                  },
             },
           },
         ],

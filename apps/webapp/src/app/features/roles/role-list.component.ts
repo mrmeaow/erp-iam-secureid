@@ -2,22 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { Api } from '../../core/api/api';
 import * as ApiFns from '../../core/api/functions';
+import { PermissionDto, RoleDto } from '../../core/api/models';
 import { ApiResponseDto } from '../../core/api/models/api-response-dto';
 import { LoadingService } from '../../core/services/loading.service';
-
-interface PermissionItem {
-  permission_id: string;
-  resource: string;
-  action: string;
-  label?: string;
-  group?: string;
-}
-
-interface RoleItem {
-  role_id: string;
-  name: string;
-  permissions?: PermissionItem[];
-}
 
 @Component({
   selector: 'app-role-list',
@@ -29,8 +16,8 @@ export class RoleListComponent implements OnInit {
   private readonly api = inject(Api);
   private readonly loading = inject(LoadingService);
 
-  roles = signal<RoleItem[]>([]);
-  permissions = signal<PermissionItem[]>([]);
+  roles = signal<RoleDto[]>([]);
+  permissions = signal<PermissionDto[]>([]);
   selectedRoleId = signal<string>('');
   selectedPermissionIds = signal<string[]>([]);
   newRoleName = signal<string>('');
@@ -46,8 +33,8 @@ export class RoleListComponent implements OnInit {
         ApiFns.roleControllerGetRolesV1,
         {},
       )) as unknown as ApiResponseDto;
-      if (response?.success && Array.isArray(response.data)) {
-        this.roles.set(response.data as RoleItem[]);
+      if (response?.success && response.data) {
+        this.roles.set(response.data as unknown as RoleDto[]);
         const firstRoleId = this.roles()[0]?.role_id;
         if (firstRoleId && !this.selectedRoleId()) {
           this.selectRole(firstRoleId);
@@ -65,8 +52,8 @@ export class RoleListComponent implements OnInit {
         ApiFns.permissionControllerFindAllV1,
         {},
       )) as unknown as ApiResponseDto;
-      if (response?.success && Array.isArray(response.data)) {
-        this.permissions.set(response.data as PermissionItem[]);
+      if (response?.success && response.data) {
+        this.permissions.set(response.data as unknown as PermissionDto[]);
       }
     } finally {
       this.loading.hide();
@@ -76,9 +63,7 @@ export class RoleListComponent implements OnInit {
   selectRole(roleId: string) {
     this.selectedRoleId.set(roleId);
     const role = this.roles().find((r) => r.role_id === roleId);
-    this.selectedPermissionIds.set(
-      (role?.permissions || []).map((p) => p.permission_id),
-    );
+    this.selectedPermissionIds.set((role?.permissions || []).map((p) => p.permission_id));
   }
 
   togglePermission(permissionId: string) {

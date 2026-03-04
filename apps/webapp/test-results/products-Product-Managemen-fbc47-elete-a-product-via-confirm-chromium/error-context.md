@@ -1,0 +1,89 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e7]:
+      - generic [ref=e9]: S
+      - generic [ref=e10]: SECURE.ID
+    - navigation [ref=e11]:
+      - link "grid_view Overview" [ref=e12] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=e13]: grid_view
+        - generic [ref=e14]: Overview
+      - link "corporate_fare Tenants" [ref=e15] [cursor=pointer]:
+        - /url: /dashboard/tenants
+        - generic [ref=e16]: corporate_fare
+        - generic [ref=e17]: Tenants
+      - link "inventory_2 Products" [ref=e18] [cursor=pointer]:
+        - /url: /dashboard/products
+        - generic [ref=e19]: inventory_2
+        - generic [ref=e20]: Products
+      - link "group Users & Teams" [ref=e21] [cursor=pointer]:
+        - /url: /dashboard/users
+        - generic [ref=e22]: group
+        - generic [ref=e23]: Users & Teams
+      - link "admin_panel_settings Roles & Permissions" [ref=e24] [cursor=pointer]:
+        - /url: /dashboard/roles
+        - generic [ref=e25]: admin_panel_settings
+        - generic [ref=e26]: Roles & Permissions
+      - link "analytics Audit Logs" [ref=e27] [cursor=pointer]:
+        - /url: /dashboard/audit
+        - generic [ref=e28]: analytics
+        - generic [ref=e29]: Audit Logs
+      - link "account_circle Profile" [ref=e30] [cursor=pointer]:
+        - /url: /dashboard/profile
+        - generic [ref=e31]: account_circle
+        - generic [ref=e32]: Profile
+    - button "first_page" [ref=e34]:
+      - generic [ref=e35]: first_page
+  - generic [ref=e36]:
+    - banner [ref=e37]:
+      - heading "ERP/Dashboard" [level=1] [ref=e39]
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - generic [ref=e42]: corporate_fare
+          - generic [ref=e43]: "Tenant: 9e542c8b"
+        - generic [ref=e45] [cursor=pointer]:
+          - generic [ref=e46]:
+            - generic [ref=e47]: owner-1772650458950@test.local
+            - generic [ref=e48]: OWNER
+          - generic [ref=e49]: O
+    - main [ref=e50]:
+      - generic [ref=e53]:
+        - generic [ref=e54]:
+          - generic [ref=e55]:
+            - heading "Products" [level=2] [ref=e56]
+            - paragraph [ref=e57]: Manage your product inventory and prices.
+          - button "add Add Product" [ref=e58]:
+            - generic [ref=e59]: add
+            - text: Add Product
+        - table [ref=e61]:
+          - rowgroup [ref=e62]:
+            - row "Name SKU Price Status Actions" [ref=e63]:
+              - columnheader "Name" [ref=e64]
+              - columnheader "SKU" [ref=e65]
+              - columnheader "Price" [ref=e66]
+              - columnheader "Status" [ref=e67]
+              - columnheader "Actions" [ref=e68]
+          - rowgroup [ref=e69]:
+            - row "DEL-1772650460824 SKU-DEL $99.00 In Stock edit delete visibility" [ref=e70]:
+              - cell "DEL-1772650460824" [ref=e71]
+              - cell "SKU-DEL" [ref=e72]
+              - cell "$99.00" [ref=e73]
+              - cell "In Stock" [ref=e74]:
+                - generic [ref=e75]: In Stock
+              - cell "edit delete visibility" [ref=e76]:
+                - generic [ref=e77]:
+                  - button "edit" [ref=e78]:
+                    - generic [ref=e79]: edit
+                  - button "delete" [active] [ref=e80]:
+                    - generic [ref=e81]: delete
+                  - button "visibility" [ref=e82]:
+                    - generic [ref=e83]: visibility
+        - generic [ref=e84]:
+          - generic [ref=e85]:
+            - generic [ref=e86]: info
+            - text: ENFORCEMENT VERIFICATION
+          - paragraph [ref=e87]: This table enforces both RBAC (Role-based) and ABAC (Attribute-based) access control. The "Add Product" button is RBAC-only, while "Edit" and "Delete" are restricted to the record owner or admin.
+```

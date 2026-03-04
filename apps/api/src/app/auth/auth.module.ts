@@ -37,6 +37,14 @@ import { SessionService } from './services/session.service';
   ],
   controllers: [AuthController],
   providers: [AuthService, SessionService, AuthGuard, PermissionGuard],
-  exports: [AuthService, AuthGuard, PermissionGuard, JwtModule, SessionService],
+  exports: [
+    AuthService,
+    AuthGuard,
+    PermissionGuard,
+    JwtModule,
+    SessionService,
+    TypeOrmModule,
+    AuditLogModule,
+  ],
 })
 export class AuthModule {}

@@ -7,21 +7,30 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
+import { AddMemberDto } from '../../models/add-member-dto';
+import { ApiResponseDto } from '../../models/api-response-dto';
+import { TenantMembershipDto } from '../../models/tenant-membership-dto';
 
 export interface TenantControllerAddMemberV1$Params {
+      body: AddMemberDto
 }
 
-export function tenantControllerAddMemberV1(http: HttpClient, rootUrl: string, params?: TenantControllerAddMemberV1$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+export function tenantControllerAddMemberV1(http: HttpClient, rootUrl: string, params: TenantControllerAddMemberV1$Params, context?: HttpContext): Observable<StrictHttpResponse<ApiResponseDto & {
+'data'?: TenantMembershipDto;
+}>> {
   const rb = new RequestBuilder(rootUrl, tenantControllerAddMemberV1.PATH, 'post');
   if (params) {
+    rb.body(params.body, 'application/json');
   }
 
   return http.request(
-    rb.build({ responseType: 'text', accept: '*/*', context })
+    rb.build({ responseType: 'json', accept: 'application/json', context })
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
+      return r as StrictHttpResponse<ApiResponseDto & {
+      'data'?: TenantMembershipDto;
+      }>;
     })
   );
 }

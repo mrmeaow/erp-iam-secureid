@@ -7,23 +7,29 @@ import { filter, map } from 'rxjs/operators';
 import { StrictHttpResponse } from '../../strict-http-response';
 import { RequestBuilder } from '../../request-builder';
 
+import { ApiResponseDto } from '../../models/api-response-dto';
+import { ProductDto } from '../../models/product-dto';
 
 export interface ProductControllerFindOneV1$Params {
   id: string;
 }
 
-export function productControllerFindOneV1(http: HttpClient, rootUrl: string, params: ProductControllerFindOneV1$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+export function productControllerFindOneV1(http: HttpClient, rootUrl: string, params: ProductControllerFindOneV1$Params, context?: HttpContext): Observable<StrictHttpResponse<ApiResponseDto & {
+'data'?: ProductDto;
+}>> {
   const rb = new RequestBuilder(rootUrl, productControllerFindOneV1.PATH, 'get');
   if (params) {
     rb.path('id', params.id, {});
   }
 
   return http.request(
-    rb.build({ responseType: 'text', accept: '*/*', context })
+    rb.build({ responseType: 'json', accept: 'application/json', context })
   ).pipe(
     filter((r: any): r is HttpResponse<any> => r instanceof HttpResponse),
     map((r: HttpResponse<any>) => {
-      return (r as HttpResponse<any>).clone({ body: undefined }) as StrictHttpResponse<void>;
+      return r as StrictHttpResponse<ApiResponseDto & {
+      'data'?: ProductDto;
+      }>;
     })
   );
 }

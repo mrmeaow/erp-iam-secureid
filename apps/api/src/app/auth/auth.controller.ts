@@ -1,18 +1,18 @@
 import { JwtPayload } from '#config/types/auth.types';
 import {
-    Body,
-    Controller,
-    Get,
-    HttpCode,
-    Post,
-    Req,
-    UseGuards,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import {
-    ApiBearerAuth,
-    ApiOperation,
-    ApiResponse,
-    ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import type { FastifyRequest } from 'fastify';
 import { SuccessResponseDto } from '../../shared/dto/response.dto';
@@ -47,11 +47,7 @@ export class AuthController {
 
   @Post('register-user')
   @ApiOperation({ summary: 'Register a new user only (no company/tenant)' })
-  @ApiSuccessResponse(
-    AuthTokensDto,
-    201,
-    'Successfully registered user.',
-  )
+  @ApiSuccessResponse(AuthTokensDto, 201, 'Successfully registered user.')
   async registerUser(@Body() registerDto: RegisterUserDto) {
     return this.authService.registerUser(registerDto);
   }
@@ -93,8 +89,9 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current logged in user details' })
   @ApiSuccessResponse(UserProfileDto, 200, 'Returns the current user payload.')
-  async getMe(@Req() req: FastifyRequest) {
-    return req['user'] as JwtPayload;
+  async getMe(@Req() req: FastifyRequest): Promise<UserProfileDto> {
+    const payload = req['user'] as JwtPayload;
+    return this.authService.getProfile(payload.sub, payload.tenantId) as any;
   }
 
   @Post('forgot-password')

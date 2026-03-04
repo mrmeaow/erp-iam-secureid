@@ -1,9 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
 import { Api } from '../../core/api/api';
 import * as ApiFns from '../../core/api/functions';
+import { RoleDto, TenantMembershipDto } from '../../core/api/models';
 import { ApiResponseDto } from '../../core/api/models/api-response-dto';
 import { LoadingService } from '../../core/services/loading.service';
 
@@ -15,11 +14,10 @@ import { LoadingService } from '../../core/services/loading.service';
 })
 export class UserListComponent implements OnInit {
   private readonly api = inject(Api);
-  private readonly http = inject(HttpClient);
   private readonly loading = inject(LoadingService);
 
-  members = signal<any[]>([]);
-  roles = signal<any[]>([]);
+  members = signal<TenantMembershipDto[]>([]);
+  roles = signal<RoleDto[]>([]);
 
   async ngOnInit() {
     await Promise.all([this.loadMembers(), this.loadRoles()]);
@@ -32,8 +30,8 @@ export class UserListComponent implements OnInit {
         ApiFns.tenantControllerGetMembersV1,
         {},
       )) as unknown as ApiResponseDto;
-      if (response.success) {
-        this.members.set(response.data as any[]);
+      if (response.success && response.data) {
+        this.members.set(response.data as unknown as TenantMembershipDto[]);
       }
     } finally {
       this.loading.hide();
@@ -47,8 +45,8 @@ export class UserListComponent implements OnInit {
         ApiFns.roleControllerGetRolesV1,
         {},
       )) as unknown as ApiResponseDto;
-      if (response.success) {
-        this.roles.set(response.data as any[]);
+      if (response.success && response.data) {
+        this.roles.set(response.data as unknown as RoleDto[]);
       }
     } finally {
       this.loading.hide();
@@ -72,12 +70,9 @@ export class UserListComponent implements OnInit {
 
     this.loading.show();
     try {
-      await firstValueFrom(
-        this.http.post<ApiResponseDto>(`${this.api.rootUrl}/v1/tenants/members`, {
-          user_id: userId,
-          role_id: roleId,
-        }),
-      );
+      await this.api.invoke(ApiFns.tenantControllerAddMemberV1, {
+        body: { user_id: userId, role_id: roleId },
+      });
       await this.loadMembers();
     } finally {
       this.loading.hide();

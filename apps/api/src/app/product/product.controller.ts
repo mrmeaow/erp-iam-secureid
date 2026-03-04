@@ -12,14 +12,22 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { FastifyRequest } from 'fastify';
+import { SuccessResponseDto } from '../../shared/dto/response.dto';
+import { ApiSuccessResponse } from '../../shared/utils/swagger';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { Permissions } from '../auth/decorators/permissions.decorator';
 import { AuthGuard } from '../auth/guards/auth.guard';
+import { PermissionGuard } from '../auth/guards/permission.guard';
+import {
+  CreateProductDto,
+  ProductDto,
+  UpdateProductDto,
+} from './dto/product.dto';
 import { ProductService } from './product.service';
 
 @ApiTags('Products')
 @ApiBearerAuth()
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PermissionGuard)
 @Controller({ path: 'products', version: '1' })
 export class ProductController {
   constructor(
@@ -28,9 +36,10 @@ export class ProductController {
   ) {}
 
   @ApiOperation({ summary: 'List all products in current tenant' })
+  @ApiSuccessResponse(ProductDto, 200, 'Returns list of products.', true)
   @Permissions('PRODUCTS:READ')
   @Get()
-  async findAll(@Req() req: FastifyRequest) {
+  async findAll(@Req() req: FastifyRequest): Promise<ProductDto[]> {
     const user = req['user'] as JwtPayload;
     const data = await this.productService.findAll(user.tenantId!);
     await this.auditLogService.log({
@@ -41,13 +50,17 @@ export class ProductController {
       resource_type: 'Product',
       payload: { count: data.length },
     });
-    return data;
+    return data as any;
   }
 
   @ApiOperation({ summary: 'Get a product by ID' })
+  @ApiSuccessResponse(ProductDto, 200, 'Returns the product.')
   @Permissions('PRODUCTS:READ')
   @Get(':id')
-  async findOne(@Param('id') id: string, @Req() req: FastifyRequest) {
+  async findOne(
+    @Param('id') id: string,
+    @Req() req: FastifyRequest,
+  ): Promise<ProductDto> {
     const user = req['user'] as JwtPayload;
     const data = await this.productService.findOne(id, user.tenantId!);
     await this.auditLogService.log({
@@ -58,15 +71,23 @@ export class ProductController {
       resource_type: 'Product',
       resource_id: id,
     });
-    return data;
+    return data as any;
   }
 
   @ApiOperation({ summary: 'Create a new product' })
+  @ApiSuccessResponse(ProductDto, 201, 'Successfully created product.')
   @Permissions('PRODUCTS:WRITE')
   @Post()
-  async create(@Body() body: any, @Req() req: FastifyRequest) {
+  async create(
+    @Body() body: CreateProductDto,
+    @Req() req: FastifyRequest,
+  ): Promise<ProductDto> {
     const user = req['user'] as JwtPayload;
-    const data = await this.productService.create(user.tenantId!, user.sub, body);
+    const data = await this.productService.create(
+      user.tenantId!,
+      user.sub,
+      body,
+    );
     await this.auditLogService.log({
       action: 'product.created',
       actor_id: user.sub,
@@ -76,17 +97,18 @@ export class ProductController {
       resource_id: data.product_id,
       payload: { name: data.name },
     });
-    return data;
+    return data as any;
   }
 
   @ApiOperation({ summary: 'Update an existing product' })
+  @ApiSuccessResponse(ProductDto, 200, 'Successfully updated product.')
   @Permissions('PRODUCTS:WRITE')
   @Patch(':id')
   async update(
     @Param('id') id: string,
-    @Body() body: any,
+    @Body() body: UpdateProductDto,
     @Req() req: FastifyRequest,
-  ) {
+  ): Promise<ProductDto> {
     const user = req['user'] as JwtPayload;
     const data = await this.productService.update(id, user.tenantId!, body);
     await this.auditLogService.log({
@@ -98,13 +120,17 @@ export class ProductController {
       resource_id: id,
       payload: { keys: Object.keys(body || {}) },
     });
-    return data;
+    return data as any;
   }
 
   @ApiOperation({ summary: 'Delete a product' })
+  @ApiSuccessResponse(SuccessResponseDto, 200, 'Successfully deleted product.')
   @Permissions('PRODUCTS:WRITE')
   @Delete(':id')
-  async remove(@Param('id') id: string, @Req() req: FastifyRequest) {
+  async remove(
+    @Param('id') id: string,
+    @Req() req: FastifyRequest,
+  ): Promise<SuccessResponseDto> {
     const user = req['user'] as JwtPayload;
     await this.productService.remove(id, user.tenantId!);
     await this.auditLogService.log({
@@ -115,6 +141,6 @@ export class ProductController {
       resource_type: 'Product',
       resource_id: id,
     });
-    return { success: true };
+    return { success: true, message: 'Product deleted' };
   }
 }
