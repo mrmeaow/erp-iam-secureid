@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
+import { PaginationQueryDto } from '../../shared/dto/pagination.dto';
 import { Product } from './entities/product.entity';
 
 @Injectable()
@@ -10,10 +11,33 @@ export class ProductService {
     private readonly productRepository: Repository<Product>,
   ) {}
 
-  async findAll(tenant_id: string): Promise<Product[]> {
-    return this.productRepository.find({
-      where: { tenant_id },
+  async findAll(
+    tenant_id: string,
+    query: PaginationQueryDto,
+  ): Promise<{ data: Product[]; total: number }> {
+    const { page = 1, limit = 10, sortBy, sortOrder = 'DESC', search } = query;
+    const skip = (page - 1) * limit;
+
+    const where: any = { tenant_id };
+    if (search) {
+      where.name = ILike(`%${search}%`);
+    }
+
+    const order: any = {};
+    if (sortBy) {
+      order[sortBy] = sortOrder;
+    } else {
+      order.created_at = 'DESC'; // default sort
+    }
+
+    const [data, total] = await this.productRepository.findAndCount({
+      where,
+      order,
+      skip,
+      take: limit,
     });
+
+    return { data, total };
   }
 
   async findOne(product_id: string, tenant_id: string): Promise<Product> {

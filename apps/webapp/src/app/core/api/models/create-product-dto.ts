@@ -14,6 +14,11 @@ export interface CreateProductDto {
   price: number;
 
   /**
+   * The current inventory quantity
+   */
+  quantity: number;
+
+  /**
    * The stock keeping unit identifier
    */
   sku?: string;

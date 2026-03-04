@@ -1,3 +1,4 @@
+import { buildSuccess } from '#config/api.response';
 import { JwtPayload } from '#config/types/auth.types';
 import {
   Body,
@@ -7,11 +8,13 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { FastifyRequest } from 'fastify';
+import { PaginationQueryDto } from '../../shared/dto/pagination.dto';
 import { SuccessResponseDto } from '../../shared/dto/response.dto';
 import { ApiSuccessResponse } from '../../shared/utils/swagger';
 import { AuditLogService } from '../audit-log/audit-log.service';
@@ -39,18 +42,31 @@ export class ProductController {
   @ApiSuccessResponse(ProductDto, 200, 'Returns list of products.', true)
   @Permissions('PRODUCTS:READ')
   @Get()
-  async findAll(@Req() req: FastifyRequest): Promise<ProductDto[]> {
+  async findAll(
+    @Req() req: FastifyRequest,
+    @Query() query: PaginationQueryDto,
+  ) {
     const user = req['user'] as JwtPayload;
-    const data = await this.productService.findAll(user.tenantId!);
+    const { data, total } = await this.productService.findAll(
+      user.tenantId!,
+      query,
+    );
+
     await this.auditLogService.log({
       action: 'product.read_many',
       actor_id: user.sub,
       actor_email: user.email,
       tenant_id: user.tenantId,
       resource_type: 'Product',
-      payload: { count: data.length },
+      payload: { count: data.length, total, page: query.page },
     });
-    return data as any;
+
+    return buildSuccess(data, 'OK', 200, {
+      page: query.page,
+      limit: query.limit,
+      total,
+      totalPages: Math.ceil(total / (query.limit || 10)),
+    });
   }
 
   @ApiOperation({ summary: 'Get a product by ID' })

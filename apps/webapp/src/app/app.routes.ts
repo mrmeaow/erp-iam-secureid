@@ -41,6 +41,13 @@ export const routes: Routes = [
             (m) => m.VerifyEmailComponent,
           ),
       },
+      {
+        path: 'accept-invite',
+        loadComponent: () =>
+          import('./features/auth/accept-invite/accept-invite.component').then(
+            (m) => m.AcceptInviteComponent,
+          ),
+      },
     ],
   },
   {

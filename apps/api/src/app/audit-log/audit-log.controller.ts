@@ -1,7 +1,9 @@
+import { buildSuccess } from '#config/api.response';
 import type { JwtPayload } from '#config/types/auth.types';
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { FastifyRequest } from 'fastify';
+import { PaginationQueryDto } from '../../shared/dto/pagination.dto';
 import { ApiSuccessResponse } from '../../shared/utils/swagger';
 import { Permissions } from '../auth/decorators/permissions.decorator';
 import { AuthGuard } from '../auth/guards/auth.guard';
@@ -20,8 +22,21 @@ export class AuditLogController {
   @ApiSuccessResponse(AuditLogDto, 200, 'Returns list of audit logs.', true)
   @Permissions('AUDIT:READ')
   @Get()
-  async findAll(@Req() req: FastifyRequest): Promise<AuditLogDto[]> {
+  async findAll(
+    @Req() req: FastifyRequest,
+    @Query() query: PaginationQueryDto,
+  ) {
     const user = req['user'] as JwtPayload;
-    return this.auditLogService.findAll(user.tenantId!) as any;
+    const { data, total } = await this.auditLogService.findAll(
+      user.tenantId!,
+      query,
+    );
+
+    return buildSuccess(data, 'OK', 200, {
+      page: query.page,
+      limit: query.limit,
+      total,
+      totalPages: Math.ceil(total / (query.limit || 50)),
+    });
   }
 }

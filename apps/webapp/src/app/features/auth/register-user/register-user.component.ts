@@ -7,12 +7,12 @@ import { LoadingService } from '../../../core/services/loading.service';
 import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-register-user',
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink, CommonModule],
-  templateUrl: './login.component.html',
+  templateUrl: './register-user.component.html',
 })
-export class LoginComponent {
+export class RegisterUserComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -20,34 +20,34 @@ export class LoginComponent {
   private toastService = inject(ToastService);
   private loadingService = inject(LoadingService);
 
-  loginForm = this.fb.nonNullable.group({
+  registerForm = this.fb.nonNullable.group({
+    name: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
   isFieldInvalid(name: string) {
-    const field = this.loginForm.get(name);
+    const field = this.registerForm.get(name);
     return field && field.invalid && (field.dirty || field.touched);
   }
 
   async onSubmit() {
-    if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched();
+    if (this.registerForm.invalid) {
+      this.registerForm.markAllAsTouched();
       return;
     }
 
     this.loadingService.show();
 
     try {
-      await this.authService.login(this.loginForm.getRawValue());
-      this.toastService.success('Identity verified. Welcome back!');
+      const payload = this.registerForm.getRawValue();
+      await this.authService.registerUser(payload);
+      this.toastService.success('Account created! Please verify your email.');
       const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/dashboard';
       this.router.navigateByUrl(returnUrl);
     } catch (err: any) {
-      console.error('Login failed', err);
-      this.toastService.error(
-        err.error?.message || 'Unauthorized access. Please check your credentials.',
-      );
+      console.error('Registration failed', err);
+      this.toastService.error(err.error?.message || 'Registration failed.');
     } finally {
       this.loadingService.hide();
     }

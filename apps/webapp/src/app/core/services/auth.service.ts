@@ -6,16 +6,11 @@ import {
   ForgotPasswordDto as ApiForgotPasswordDto,
   LoginDto as ApiLoginDto,
   RegisterDto as ApiRegisterDto,
+  RegisterUserDto as ApiRegisterUserDto,
   ResetPasswordDto as ApiResetPasswordDto,
   VerifyEmailDto as ApiVerifyEmailDto,
 } from '../api/models';
-import {
-  AuthTokens,
-  LoginDto,
-  PermissionInfo,
-  RegisterDto,
-  UserProfile,
-} from '../models/auth.models';
+import { AuthTokens, LoginDto, PermissionInfo, UserProfile } from '../models/auth.models';
 
 @Injectable({
   providedIn: 'root',
@@ -75,13 +70,28 @@ export class AuthService {
     return tokens;
   }
 
-  async register(dto: RegisterDto): Promise<AuthTokens> {
+  async register(dto: ApiRegisterDto): Promise<AuthTokens> {
     const response = await this.api.invoke(AuthApi.authControllerRegisterV1, {
-      body: dto as ApiRegisterDto,
+      body: dto,
     });
 
     if (!response.success || !response.data) {
       throw new Error(response.message || 'Registration failed');
+    }
+
+    const tokens = response.data as AuthTokens;
+    this.setSession(tokens);
+    await this.getMe();
+    return tokens;
+  }
+
+  async registerUser(dto: ApiRegisterUserDto): Promise<AuthTokens> {
+    const response = await this.api.invoke(AuthApi.authControllerRegisterUserV1, {
+      body: dto,
+    });
+
+    if (!response.success || !response.data) {
+      throw new Error(response.message || 'User registration failed');
     }
 
     const tokens = response.data as AuthTokens;

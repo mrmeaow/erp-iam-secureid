@@ -9,6 +9,18 @@ export class ApiMetaDto {
 
   @ApiProperty({ required: false, example: 'req-123456' })
   requestId?: string;
+
+  @ApiProperty({ required: false })
+  page?: number;
+
+  @ApiProperty({ required: false })
+  limit?: number;
+
+  @ApiProperty({ required: false })
+  total?: number;
+
+  @ApiProperty({ required: false })
+  totalPages?: number;
 }
 
 export class ApiErrorPayloadDto {

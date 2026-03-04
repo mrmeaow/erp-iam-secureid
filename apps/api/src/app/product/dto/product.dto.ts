@@ -16,6 +16,9 @@ export class ProductDto {
   @ApiProperty({ description: 'The price of the product' })
   price: number;
 
+  @ApiProperty({ description: 'The current inventory quantity' })
+  quantity: number;
+
   @ApiProperty({ description: 'The tenant ID this product belongs to' })
   tenant_id: string;
 
@@ -41,6 +44,9 @@ export class CreateProductDto {
 
   @ApiProperty({ description: 'The price of the product' })
   price: number;
+
+  @ApiProperty({ description: 'The current inventory quantity' })
+  quantity: number;
 }
 
 export class UpdateProductDto {
@@ -55,4 +61,10 @@ export class UpdateProductDto {
 
   @ApiProperty({ description: 'The price of the product', required: false })
   price?: number;
+
+  @ApiProperty({
+    description: 'The current inventory quantity',
+    required: false,
+  })
+  quantity?: number;
 }

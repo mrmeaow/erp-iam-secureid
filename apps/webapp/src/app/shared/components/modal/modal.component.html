@@ -1,0 +1,35 @@
+@if (isOpen) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <!-- Backdrop -->
+    <div
+      class="absolute inset-0 bg-primary-950/40 backdrop-blur-sm transition-opacity"
+      (click)="closeModal()"
+    ></div>
+
+    <!-- Modal Panel -->
+    <div
+      class="relative bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all flex flex-col max-h-[90vh]"
+    >
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-primary-200">
+        <div>
+          <h3 class="text-lg font-bold text-primary-900">{{ title }}</h3>
+          @if (description) {
+            <p class="mt-1 text-sm text-primary-500">{{ description }}</p>
+          }
+        </div>
+        <button
+          class="text-primary-400 hover:text-primary-600 transition-colors p-1 rounded-full hover:bg-primary-100"
+          (click)="closeModal()"
+        >
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="flex-1 overflow-y-auto p-6">
+        <ng-content></ng-content>
+      </div>
+    </div>
+  </div>
+}

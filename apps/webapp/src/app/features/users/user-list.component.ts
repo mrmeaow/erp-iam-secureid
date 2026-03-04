@@ -18,9 +18,36 @@ export class UserListComponent implements OnInit {
 
   members = signal<TenantMembershipDto[]>([]);
   roles = signal<RoleDto[]>([]);
+  inviteEmail = signal<string>('');
+  inviteRoleId = signal<string>('');
 
   async ngOnInit() {
     await Promise.all([this.loadMembers(), this.loadRoles()]);
+  }
+
+  setInviteEmail(value: string) {
+    this.inviteEmail.set(value);
+  }
+
+  setInviteRoleId(value: string) {
+    this.inviteRoleId.set(value);
+  }
+
+  async sendInvite() {
+    const email = this.inviteEmail().trim();
+    const role_id = this.inviteRoleId();
+    if (!email || !role_id) return;
+
+    this.loading.show();
+    try {
+      await this.api.invoke(ApiFns.invitationControllerSendInviteV1, {
+        body: { email, role_id },
+      });
+      this.inviteEmail.set('');
+      await this.loadMembers();
+    } finally {
+      this.loading.hide();
+    }
   }
 
   async loadMembers() {

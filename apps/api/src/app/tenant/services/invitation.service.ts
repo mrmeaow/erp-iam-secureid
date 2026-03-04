@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'crypto';
 import { Repository } from 'typeorm';
@@ -46,9 +50,16 @@ export class InvitationService {
 
     const saved = await this.invitationRepository.save(invitation);
 
-    // Send email (Assuming we have a sendInvitationEmail method in MailService)
-    // For now, I'll log it or assume it's there.
-    // await this.mailService.sendInvitationEmail({ email: data.email, token, tenantName: ... });
+    // Fetch tenant to get the name for the email
+    const tenant = await this.tenantService.findByDomainOrId(data.tenant_id);
+    const tenantName = tenant?.name || 'Organization';
+
+    // Send email
+    await this.mailService.sendInvitationEmail({
+      email: data.email,
+      token,
+      tenantName,
+    });
 
     return saved;
   }
@@ -64,7 +75,9 @@ export class InvitationService {
     }
 
     if (invitation.status !== InvitationStatus.PENDING) {
-      throw new BadRequestException(`Invitation is already ${invitation.status}`);
+      throw new BadRequestException(
+        `Invitation is already ${invitation.status}`,
+      );
     }
 
     if (invitation.expires_at && invitation.expires_at < new Date()) {
@@ -80,7 +93,9 @@ export class InvitationService {
     const invitation = await this.findByToken(token);
 
     if (invitation.status !== InvitationStatus.PENDING) {
-      throw new BadRequestException(`Invitation is already ${invitation.status}`);
+      throw new BadRequestException(
+        `Invitation is already ${invitation.status}`,
+      );
     }
 
     const user = await this.userService.findById(userId);

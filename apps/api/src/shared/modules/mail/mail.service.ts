@@ -31,4 +31,17 @@ export class MailService {
     });
     this.logger.debug(`Password reset email job added for ${user.email}`);
   }
+
+  async sendInvitationEmail(data: {
+    email: string;
+    token: string;
+    tenantName: string;
+  }) {
+    await this.mailQueue.add('invitation', {
+      to: data.email,
+      token: data.token,
+      tenantName: data.tenantName,
+    });
+    this.logger.debug(`Invitation email job added for ${data.email}`);
+  }
 }

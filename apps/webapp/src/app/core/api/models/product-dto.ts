@@ -29,6 +29,11 @@ export interface ProductDto {
   product_id: string;
 
   /**
+   * The current inventory quantity
+   */
+  quantity: number;
+
+  /**
    * The stock keeping unit identifier
    */
   sku?: string;

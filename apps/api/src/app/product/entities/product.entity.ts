@@ -45,6 +45,10 @@ export class Product {
   price: number;
 
   @ApiProperty()
+  @Column({ type: 'int', default: 0 })
+  quantity: number;
+
+  @ApiProperty()
   @CreateDateColumn()
   created_at: Date;
 

@@ -2,11 +2,49 @@
   <div class="flex items-center justify-between border-b border-primary-200 pb-5">
     <div>
       <h2 class="text-2xl font-bold text-primary-900 tracking-tight">Users & Teams</h2>
-      <p class="mt-1 text-sm text-primary-500">
-        Manage tenant memberships and role assignment.
-      </p>
+      <p class="mt-1 text-sm text-primary-500">Manage tenant memberships and role assignment.</p>
     </div>
   </div>
+
+  <!-- Invite Section -->
+  <section class="bg-white border border-primary-200 rounded-lg p-6 shadow-sm space-y-4">
+    <div>
+      <h3 class="text-sm font-bold text-primary-900 uppercase tracking-wider">Invite New Member</h3>
+      <p class="text-xs text-primary-500 mt-1">
+        Send an invitation email to add a member to this tenant.
+      </p>
+    </div>
+    <div class="flex flex-col md:flex-row gap-3">
+      <div class="flex-1">
+        <input
+          type="email"
+          class="ent-input"
+          placeholder="colleague@company.com"
+          [value]="inviteEmail()"
+          (input)="setInviteEmail($any($event.target).value)"
+        />
+      </div>
+      <div class="w-full md:w-48">
+        <select
+          class="w-full rounded-md border border-primary-300 px-4 py-2 text-sm focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 outline-none transition-all"
+          [value]="inviteRoleId()"
+          (change)="setInviteRoleId($any($event.target).value)"
+        >
+          <option value="" disabled selected>Select Role</option>
+          @for (role of roles(); track role.role_id) {
+            <option [value]="role.role_id">{{ role.name }}</option>
+          }
+        </select>
+      </div>
+      <button
+        class="btn-primary px-8 justify-center min-w-[140px]"
+        (click)="sendInvite()"
+        [disabled]="!inviteEmail() || !inviteRoleId()"
+      >
+        Send Invitation
+      </button>
+    </div>
+  </section>
 
   <div class="bg-white border border-primary-200 rounded-lg shadow-sm overflow-hidden">
     <table class="ent-table">

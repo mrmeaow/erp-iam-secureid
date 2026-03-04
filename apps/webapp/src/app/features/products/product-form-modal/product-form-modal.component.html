@@ -1,0 +1,98 @@
+<app-modal
+  [isOpen]="isOpen"
+  [title]="isViewMode ? 'View Product Details' : product ? 'Edit Product' : 'Add New Product'"
+  [description]="
+    isViewMode
+      ? 'Product information and inventory.'
+      : product
+        ? 'Update product details and inventory.'
+        : 'Enter details for the new product.'
+  "
+  (close)="close.emit()"
+>
+  <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="space-y-5">
+    <div>
+      <label class="block text-sm font-semibold text-primary-900 mb-1" for="name"
+        >Product Name *</label
+      >
+      <input
+        id="name"
+        type="text"
+        formControlName="name"
+        class="ent-input"
+        [class.border-red-500]="isFieldInvalid('name')"
+        placeholder="e.g. Enterprise License"
+        autocomplete="off"
+      />
+      @if (isFieldInvalid('name')) {
+        <p class="mt-1 text-xs text-red-500 font-medium">Product name is required.</p>
+      }
+    </div>
+
+    <div>
+      <label class="block text-sm font-semibold text-primary-900 mb-1" for="sku"
+        >SKU (Optional)</label
+      >
+      <input
+        id="sku"
+        type="text"
+        formControlName="sku"
+        class="ent-input"
+        [class.border-red-500]="isFieldInvalid('sku')"
+        placeholder="e.g. ENT-LIC-01"
+        autocomplete="off"
+      />
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-semibold text-primary-900 mb-1" for="price"
+          >Price ($) *</label
+        >
+        <input
+          id="price"
+          type="number"
+          step="0.01"
+          min="0"
+          formControlName="price"
+          class="ent-input"
+          [class.border-red-500]="isFieldInvalid('price')"
+          placeholder="0.00"
+        />
+        @if (isFieldInvalid('price')) {
+          <p class="mt-1 text-xs text-red-500 font-medium">Valid price is required.</p>
+        }
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-primary-900 mb-1" for="quantity"
+          >Quantity *</label
+        >
+        <input
+          id="quantity"
+          type="number"
+          step="1"
+          min="0"
+          formControlName="quantity"
+          class="ent-input"
+          [class.border-red-500]="isFieldInvalid('quantity')"
+          placeholder="0"
+        />
+        @if (isFieldInvalid('quantity')) {
+          <p class="mt-1 text-xs text-red-500 font-medium">Valid quantity is required.</p>
+        }
+      </div>
+    </div>
+
+    <div class="pt-4 flex justify-end gap-3 mt-6 border-t border-primary-100">
+      <button type="button" class="btn-secondary" (click)="close.emit()">
+        {{ isViewMode ? 'Close' : 'Cancel' }}
+      </button>
+      @if (!isViewMode) {
+        <button type="submit" class="btn-primary" [disabled]="productForm.invalid">
+          {{ product ? 'Save Changes' : 'Create Product' }}
+        </button>
+      }
+    </div>
+  </form>
+</app-modal>

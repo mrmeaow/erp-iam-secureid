@@ -19,29 +19,6 @@
     </button>
   </div>
 
-  <section class="bg-white border border-primary-200 rounded-lg p-4 space-y-3">
-    <h3 class="text-sm font-semibold text-primary-900">Invite User</h3>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-      <input
-        type="email"
-        class="rounded border border-primary-300 px-3 py-2 text-sm"
-        placeholder="user@company.com"
-        [value]="inviteEmail()"
-        (input)="setInviteEmail($any($event.target).value)"
-      />
-      <select
-        class="rounded border border-primary-300 px-3 py-2 text-sm"
-        [value]="inviteRoleId()"
-        (change)="setInviteRoleId($any($event.target).value)"
-      >
-        @for (role of roles(); track role.role_id) {
-          <option [value]="role.role_id">{{ role.name }}</option>
-        }
-      </select>
-      <button class="btn-primary" (click)="sendInvite()">Send Invite</button>
-    </div>
-  </section>
-
   <!-- Grid Container -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     @for (tenant of tenants(); track tenant.tenant_id) {

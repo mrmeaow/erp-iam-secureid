@@ -52,6 +52,18 @@ export class MailProcessor extends WorkerHost {
           });
           break;
 
+        case 'invitation':
+          await this.mailerService.sendMail({
+            to: job.data.to,
+            subject: `Invitation to join ${job.data.tenantName}`,
+            template: './invitation',
+            context: {
+              tenantName: job.data.tenantName,
+              inviteUrl: `http://localhost:4200/auth/accept-invite?token=${job.data.token}`,
+            },
+          });
+          break;
+
         default:
           this.logger.warn(`No handler for email job name: ${job.name}`);
       }

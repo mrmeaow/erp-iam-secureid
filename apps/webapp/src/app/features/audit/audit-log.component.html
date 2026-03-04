@@ -3,14 +3,16 @@
   <div class="flex items-center justify-between border-b border-primary-200 pb-5">
     <div>
       <h2 class="text-2xl font-bold text-primary-900 tracking-tight">Audit Logs</h2>
-      <p class="mt-1 text-sm text-primary-500">Track all security and modification events within your tenant.</p>
+      <p class="mt-1 text-sm text-primary-500">
+        Track all security and modification events within your tenant.
+      </p>
     </div>
-    
+
     <div class="flex gap-2">
-       <button (click)="loadLogs()" class="btn-secondary py-1.5 px-3 text-xs gap-2">
-         <span class="material-symbols-outlined text-[16px]">refresh</span>
-         Refresh
-       </button>
+      <button (click)="loadLogs()" class="btn-secondary py-1.5 px-3 text-xs gap-2">
+        <span class="material-symbols-outlined text-[16px]">refresh</span>
+        Refresh
+      </button>
     </div>
   </div>
 
@@ -30,7 +32,9 @@
       <tbody class="divide-y divide-primary-100">
         @for (log of logs(); track log.id) {
           <tr class="hover:bg-primary-50/50 transition-colors text-xs">
-            <td class="text-primary-500 whitespace-nowrap">{{ log.created_at | date:'medium' }}</td>
+            <td class="text-primary-500 whitespace-nowrap">
+              {{ log.created_at | date: 'medium' }}
+            </td>
             <td class="font-medium text-primary-900">
               <div class="flex flex-col">
                 <span>{{ log.actor_email || 'System' }}</span>
@@ -45,12 +49,19 @@
             <td>
               <div class="flex flex-col">
                 <span class="font-medium">{{ log.resource_type || 'N/A' }}</span>
-                <span class="text-[9px] text-primary-400 font-mono">{{ log.resource_id || '-' }}</span>
+                <span class="text-[9px] text-primary-400 font-mono">{{
+                  log.resource_id || '-'
+                }}</span>
               </div>
             </td>
             <td>
               <!-- Handling status - case insensitive check in component -->
-              <span [class]="'inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold border uppercase ' + getStatusClass(getStatusLabel(log))">
+              <span
+                [class]="
+                  'inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold border uppercase ' +
+                  getStatusClass(getStatusLabel(log))
+                "
+              >
                 {{ getStatusLabel(log) }}
               </span>
             </td>
@@ -69,4 +80,12 @@
       </tbody>
     </table>
   </div>
+
+  <app-pagination
+    [page]="page()"
+    [limit]="limit()"
+    [totalItems]="totalItems()"
+    [totalPages]="totalPages()"
+    (pageChange)="onPageChange($event)"
+  ></app-pagination>
 </div>

@@ -6,6 +6,10 @@ export interface ApiMeta {
   timestamp: string;
   path?: string;
   requestId?: string;
+  page?: number;
+  limit?: number;
+  total?: number;
+  totalPages?: number;
 }
 
 export interface ApiResponse<T = unknown> {

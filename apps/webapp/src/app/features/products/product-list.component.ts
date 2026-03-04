@@ -3,16 +3,23 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { Api } from '../../core/api/api';
 import * as ProductApi from '../../core/api/functions';
 import { CreateProductDto, ProductDto, UpdateProductDto } from '../../core/api/models';
-import { ApiResponseDto } from '../../core/api/models/api-response-dto';
 import { HasPermissionDirective } from '../../core/directives/has-permission.directive';
 import { CanAccessPipe } from '../../core/pipes/can-access.pipe';
 import { AccessControlService } from '../../core/services/access-control.service';
 import { LoadingService } from '../../core/services/loading.service';
+import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
+import { ProductFormModalComponent } from './product-form-modal/product-form-modal.component';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, HasPermissionDirective, CanAccessPipe],
+  imports: [
+    CommonModule,
+    HasPermissionDirective,
+    CanAccessPipe,
+    ProductFormModalComponent,
+    PaginationComponent,
+  ],
   templateUrl: './product-list.component.html',
 })
 export class ProductListComponent implements OnInit {
@@ -22,6 +29,15 @@ export class ProductListComponent implements OnInit {
 
   products = signal<ProductDto[]>([]);
 
+  isModalOpen = signal(false);
+  isViewMode = signal(false);
+  selectedProduct = signal<ProductDto | null>(null);
+
+  page = signal(1);
+  limit = signal(10);
+  totalItems = signal(0);
+  totalPages = signal(1);
+
   async ngOnInit() {
     await this.loadProducts();
   }
@@ -29,12 +45,18 @@ export class ProductListComponent implements OnInit {
   async loadProducts() {
     this.loading.show();
     try {
-      const response = (await this.api.invoke(
-        ProductApi.productControllerFindAllV1,
-        {},
-      )) as unknown as ApiResponseDto;
-      if (response.success && response.data) {
-        this.products.set(response.data as unknown as ProductDto[]);
+      const response: any = await this.api.invoke(ProductApi.productControllerFindAllV1, {
+        page: this.page(),
+        limit: this.limit(),
+      });
+      if (response && response.success && response.data) {
+        this.products.set(response.data as ProductDto[]);
+        if (response.meta) {
+          const meta = response.meta as any;
+          this.page.set(meta.page || 1);
+          this.totalItems.set(meta.total || 0);
+          this.totalPages.set(meta.totalPages || 1);
+        }
       }
     } finally {
       this.loading.hide();
@@ -46,54 +68,45 @@ export class ProductListComponent implements OnInit {
 
     this.loading.show();
     try {
-      await this.api.invoke(ProductApi.productControllerRemoveV1, {
+      const response: any = await this.api.invoke(ProductApi.productControllerRemoveV1, {
         id: product.product_id,
       });
-      await this.loadProducts();
+      if (response && response.success) {
+        await this.loadProducts();
+      }
     } finally {
       this.loading.hide();
     }
   }
 
-  async createProduct() {
-    const name = prompt('Product name');
-    if (!name) return;
-    const sku = prompt('SKU', '') || undefined;
-    const priceRaw = prompt('Price', '0') || '0';
-    const price = Number(priceRaw);
-
-    this.loading.show();
-    try {
-      const body: CreateProductDto = {
-        name,
-        sku,
-        price: Number.isFinite(price) ? price : 0,
-      };
-      await this.api.invoke(ProductApi.productControllerCreateV1, {
-        body,
-      });
-      await this.loadProducts();
-    } finally {
-      this.loading.hide();
-    }
+  createProduct() {
+    this.selectedProduct.set(null);
+    this.isViewMode.set(false);
+    this.isModalOpen.set(true);
   }
 
-  async editProduct(product: ProductDto) {
-    const name = prompt('Update product name', product.name || '');
-    if (!name) return;
-    const priceRaw = prompt('Update price', String(product.price ?? 0)) || '0';
-    const price = Number(priceRaw);
+  editProduct(product: ProductDto) {
+    this.selectedProduct.set(product);
+    this.isViewMode.set(false);
+    this.isModalOpen.set(true);
+  }
 
+  async handleSave(event: { isEdit: boolean; data: CreateProductDto | UpdateProductDto }) {
     this.loading.show();
     try {
-      const body: UpdateProductDto = {
-        name,
-        price: Number.isFinite(price) ? price : product.price,
-      };
-      await this.api.invoke(ProductApi.productControllerUpdateV1, {
-        id: product.product_id,
-        body,
-      });
+      if (event.isEdit && this.selectedProduct()) {
+        const response: any = await this.api.invoke(ProductApi.productControllerUpdateV1, {
+          id: this.selectedProduct()!.product_id,
+          body: event.data as UpdateProductDto,
+        });
+        if (!response.success) throw new Error(response.message);
+      } else {
+        const response: any = await this.api.invoke(ProductApi.productControllerCreateV1, {
+          body: event.data as CreateProductDto,
+        });
+        if (!response.success) throw new Error(response.message);
+      }
+      this.isModalOpen.set(false);
       await this.loadProducts();
     } finally {
       this.loading.hide();
@@ -101,17 +114,17 @@ export class ProductListComponent implements OnInit {
   }
 
   viewProduct(product: ProductDto) {
-    const lines = [
-      `Name: ${product.name ?? '-'}`,
-      `SKU: ${product.sku ?? '-'}`,
-      `Price: ${product.price ?? '-'}`,
-      `Product ID: ${product.product_id ?? '-'}`,
-    ];
-    alert(lines.join('\n'));
+    this.selectedProduct.set(product);
+    this.isViewMode.set(true);
+    this.isModalOpen.set(true);
   }
 
-  // Example for complex field level check or action check helper
   canEdit(product: ProductDto): boolean {
     return this.accessControl.can('PRODUCTS', 'WRITE', product);
+  }
+
+  onPageChange(newPage: number) {
+    this.page.set(newPage);
+    this.loadProducts();
   }
 }
